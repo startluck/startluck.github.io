@@ -1,0 +1,167 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>BUUCTF-Web-[BJDCTF2020]Cookie is so stable | 半枫</title><meta name="author" content="半枫"><meta name="copyright" content="半枫"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，注意到有三个页面BJDCTF，Flag（注入界面），Hint（提示界面），来到Flag界面，看到一个提交窗口，不是sql注入，看看Hint界面有什么提示，查看源码，提示和题目都有提到cookie，返回Flag，Cookie中有一个参数user，会不会是SSTI注入，确认为Twig的模板的SSTI，直接使用Twig模">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BUUCTF-Web-[BJDCTF2020]Cookie is so stable">
+<meta property="og:url" content="http://example.com/2025/08/22/Cookie-is-so-stable/index.html">
+<meta property="og:site_name" content="半枫">
+<meta property="og:description" content="本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，注意到有三个页面BJDCTF，Flag（注入界面），Hint（提示界面），来到Flag界面，看到一个提交窗口，不是sql注入，看看Hint界面有什么提示，查看源码，提示和题目都有提到cookie，返回Flag，Cookie中有一个参数user，会不会是SSTI注入，确认为Twig的模板的SSTI，直接使用Twig模">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/qq.png">
+<meta property="article:published_time" content="2025-08-22T11:04:47.000Z">
+<meta property="article:modified_time" content="2025-08-22T11:39:42.165Z">
+<meta property="article:author" content="半枫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/qq.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "BUUCTF-Web-[BJDCTF2020]Cookie is so stable",
+  "url": "http://example.com/2025/08/22/Cookie-is-so-stable/",
+  "image": "http://example.com/img/qq.png",
+  "datePublished": "2025-08-22T11:04:47.000Z",
+  "dateModified": "2025-08-22T11:39:42.165Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "半枫",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/qq.png"><link rel="canonical" href="http://example.com/2025/08/22/Cookie-is-so-stable/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'BUUCTF-Web-[BJDCTF2020]Cookie is so stable',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/preview.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/preview.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">半枫</span></a><a class="nav-page-title" href="/"><span class="site-name">BUUCTF-Web-[BJDCTF2020]Cookie is so stable</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">BUUCTF-Web-[BJDCTF2020]Cookie is so stable</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-22T11:04:47.000Z" title="发表于 2025-08-22 19:04:47">2025-08-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-22T11:39:42.165Z" title="更新于 2025-08-22 19:39:42">2025-08-22</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><strong>本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助</strong></p>
+<p>打开靶机，注意到有三个页面<code>BJDCTF</code>，<code>Flag</code>（注入界面），<code>Hint</code>（提示界面），<br><img src="Cookie-is-so-stable2.png"><br>来到<code>Flag</code>界面，看到一个提交窗口，<br><img src="Cookie-is-so-stable3.png"><br><img src="Cookie-is-so-stable4.png"><br><img src="Cookie-is-so-stable6.png"><br><img src="Cookie-is-so-stable7.png"><br>不是sql注入，看看<code>Hint</code>界面有什么提示，查看源码，<br><img src="Cookie-is-so-stable5.png"><br>提示和题目都有提到<code>cookie</code>，返回<code>Flag</code>，<br><img src="Cookie-is-so-stable9.png"><br><img src="Cookie-is-so-stable10.png"><br><code>Cookie</code>中有一个参数<code>user</code>，<br>会不会是<code>SSTI</code>注入，<br><img src="Cookie-is-so-stable1.png"><br>确认为<code>Twig</code>的模板的<code>SSTI</code>，<br>直接使用<code>Twig</code>模块注入的payload:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;_self.env.registerUndefinedFilterCallback(&quot;exec&quot;)&#125;&#125;&#123;&#123;_self.env.getFilter(&quot;cat /flag&quot;)&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>将Payload分成两部分来理解：<br><code>&#123;&#123;_self.env.registerUndefinedFilterCallback("exec")&#125;&#125;</code><br><code>&#123;&#123;_self.env.getFilter("cat /flag")&#125;&#125;</code></p>
+<p>第一部分：设置恶意回调<br><code>&#123;&#123;_self.env.registerUndefinedFilterCallback("exec")&#125;&#125;</code><br><code>_self:</code><br>在<code>Twig</code>模板中，<code>_self</code>是一个特殊的变量，它指向当前的模板上下文（Twig\Template实例）。通过它可以访问到模板内部的一些方法和属性。<br><code>_self.env:</code><br><code>env</code>是<code>_self</code>的一个属性，它指的是<code>Twig</code>的环境对象（Twig\Environment实例）。这个对象包含了模板引擎的所有配置、扩展、过滤器、函数等全局信息。控制了它，就相当于控制了模板引擎的核心。<br><code>registerUndefinedFilterCallback:</code><br>这是<code>Twig\Environment</code>对象的一个方法。<br>它的作用是：注册一个回调函数。当Twig在模板中遇到一个未被定义的过滤器时，就会自动调用这个注册好的回调函数，而不是直接抛错。<br>例如：如果你在模板中写了<code>&#123;&#123; 'data' | some_unknown_filter &#125;&#125;</code>，而<code>some_unknown_filter</code>这个过滤器不存在，那么注册的这个回调函数就会被调用。<br><code>&quot;exec&quot;:</code><br>这是传递给<code>registerUndefinedFilterCallback</code>方法的参数。它不再是<code>Twig</code>模板的字符串，而是一个字符串参数，其值为<code>&quot;exec&quot;</code>。<br>这个方法期望一个可调用的参数（如函数名）。这里，攻击者将回调函数设置为系统命令执行函数<code>exec</code>。<br>第一部分总结：这行代码的执行结果是——告诉<code>Twig</code>引擎：“以后如果你遇到任何不认识的过滤器，别报错，去调用<code>exec</code>函数来处理”。</p>
+<p>第二部分：触发命令执行<br><code>&#123;&#123;_self.env.getFilter("cat /flag")&#125;&#125;</code><br><code>getFilter:</code><br>这也是<code>Twig\Environment</code>对象的一个方法。它的本职工作是根据名称获取（返回）一个定义好的过滤器函数。<br><code>&quot;cat /flag&quot;:</code><br>这是传递给<code>getFilter</code>方法的参数。攻击者试图获取一个名为<code>cat /flag</code>的过滤器。<br>触发漏洞：<br>显然，Twig环境中根本不存在一个叫<code>cat /flag</code>的过滤器。<br>根据第一部分的设置，当Twig发现这个过滤器未定义时，就会触发之前注册的回调函数，也就是<code>exec</code>函数。<br>关键点在于<code>exec</code>函数被调用时，那个未定义的过滤器名称（<code>&quot;cat /flag&quot;</code>）会作为参数传递给<code>exec</code>函数。<br>因此，实际的执行过程就变成了：<code>exec(&quot;cat /flag&quot;)</code>。<br>第二部分总结：这行代码故意请求一个不存在的过滤器，以此触发第一部分设置好的恶意回调，从而将过滤器名称作为系统命令执行。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">半枫</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2025/08/22/Cookie-is-so-stable/">http://example.com/2025/08/22/Cookie-is-so-stable/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">半枫</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/qq.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/08/23/Ezpop/" title="BUUCTF-Web-[MRCTF2020]Ezpop"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">BUUCTF-Web-[MRCTF2020]Ezpop</div></div><div class="info-2"><div class="info-item-1">打开靶机，直接给我们源码，代码审计， 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849&lt;?phpclass Modifier &#123;    protected  $var;    public function append($value)&#123;        include($value);     // 危险操作：任意文件包含    &#125;    public function __invoke()&#123;  //__invoke()：当对象被当作函数调用时自动触发        $this-&gt;append($this-&gt;var);  // 触发文件包含    &#125;&#125;class Show&#123;    public $source;    public $str;    public function __construct($file=&#x27;index.php&#x27;)&#1...</div></div></div></a><a class="pagination-related" href="/2025/08/21/%E6%9C%B4%E5%AE%9E%E6%97%A0%E5%8D%8E/" title="BUUCTF-Web-[WUSTCTF2020]朴实无华"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">BUUCTF-Web-[WUSTCTF2020]朴实无华</div></div><div class="info-2"><div class="info-item-1">本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，发现一个warning，提到了header，用Burp抓包看看请求头，没有发现什么有用的信息，用dirsearch扫描网站，访问robots.txt，访问fAke_flagggg.php，到这又卡住了，想起来header，这次有信息了，访问fl4g.php，看到源码了，但是有一些乱码，按住Alt键，网页上方会出现查看的选项，然后选择修复编码文字，进行代码审计， 123456789101112131415161718192021222324252627282930313233343536373839404142&lt;?phpheader(&#x27;Content-type:text/html;charset=utf-8&#x27;);error_reporting(0);highlight_file(__file__);//level 1if (isset($_GET[&#x27;num&#x27;]))&#123;    $num = $_GET[&#x27;num&#x27;];    if...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">半枫</div><div class="author-info-description">Welcome to my blog</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/28/Nmap/" title="BUUCTF-Web-[网鼎杯 2020 朱雀组]Nmap">BUUCTF-Web-[网鼎杯 2020 朱雀组]Nmap</a><time datetime="2025-08-28T04:35:05.000Z" title="发表于 2025-08-28 12:35:05">2025-08-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/26/easy-serialize-php/" title="BUUCTF-Web-[安洵杯 2019]easy_serialize_php1">BUUCTF-Web-[安洵杯 2019]easy_serialize_php1</a><time datetime="2025-08-26T02:54:00.000Z" title="发表于 2025-08-26 10:54:00">2025-08-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/25/shrine/" title="BUUCTF-Web-[WesternCTF2018]shrine1">BUUCTF-Web-[WesternCTF2018]shrine1</a><time datetime="2025-08-25T12:35:07.000Z" title="发表于 2025-08-25 20:35:07">2025-08-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/24/easy-web/" title="BUUCTF-Web-[安洵杯 2019]easy_web">BUUCTF-Web-[安洵杯 2019]easy_web</a><time datetime="2025-08-24T13:56:21.000Z" title="发表于 2025-08-24 21:56:21">2025-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/24/PYWebsite/" title="BUUCTF-Web-[MRCTF2020]PYWebsite1">BUUCTF-Web-[MRCTF2020]PYWebsite1</a><time datetime="2025-08-24T08:30:34.000Z" title="发表于 2025-08-24 16:30:34">2025-08-24</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/preview.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By 半枫</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

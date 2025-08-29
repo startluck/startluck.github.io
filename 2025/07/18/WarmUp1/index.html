@@ -1,0 +1,178 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>BUUCTF-WEB-[HCTF 2018]WarmUp1 | 半枫</title><meta name="author" content="半枫"><meta name="copyright" content="半枫"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，看到一个笑脸没有什么有用的信息，F12看看源码，发现隐藏文件source.php，通过URL访问文件，看到一大段源码，题目为php 代码审计，那就分析一下代码 代码分析12345678910111213141516171819202122232425262728293031323334353637383940414">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BUUCTF-WEB-[HCTF 2018]WarmUp1">
+<meta property="og:url" content="http://example.com/2025/07/18/WarmUp1/index.html">
+<meta property="og:site_name" content="半枫">
+<meta property="og:description" content="本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，看到一个笑脸没有什么有用的信息，F12看看源码，发现隐藏文件source.php，通过URL访问文件，看到一大段源码，题目为php 代码审计，那就分析一下代码 代码分析12345678910111213141516171819202122232425262728293031323334353637383940414">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/qq.png">
+<meta property="article:published_time" content="2025-07-18T12:49:04.000Z">
+<meta property="article:modified_time" content="2025-07-18T15:42:56.797Z">
+<meta property="article:author" content="半枫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/qq.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "BUUCTF-WEB-[HCTF 2018]WarmUp1",
+  "url": "http://example.com/2025/07/18/WarmUp1/",
+  "image": "http://example.com/img/qq.png",
+  "datePublished": "2025-07-18T12:49:04.000Z",
+  "dateModified": "2025-07-18T15:42:56.797Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "半枫",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/qq.png"><link rel="canonical" href="http://example.com/2025/07/18/WarmUp1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'BUUCTF-WEB-[HCTF 2018]WarmUp1',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/preview.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/preview.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">半枫</span></a><a class="nav-page-title" href="/"><span class="site-name">BUUCTF-WEB-[HCTF 2018]WarmUp1</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">BUUCTF-WEB-[HCTF 2018]WarmUp1</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-18T12:49:04.000Z" title="发表于 2025-07-18 20:49:04">2025-07-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-18T15:42:56.797Z" title="更新于 2025-07-18 23:42:56">2025-07-18</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><strong>本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助</strong></p>
+<p>打开靶机，看到一个笑脸没有什么有用的信息，F12看看源码，<br><img src="warmup2.png"><br>发现隐藏文件<strong>source.php</strong>，通过URL访问文件，<br><img src="warmup3.png"><br>看到一大段源码，题目为<strong>php 代码审计</strong>，那就分析一下代码</p>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line">    <span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);   <span class="comment">//会高亮显示当前PHP文件的源代码，显示方面</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">emmm</span>                  //定义一个类<span class="title">emmm</span></span></span><br><span class="line"><span class="class">    </span>&#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">checkFile</span>(<span class="params">&amp;<span class="variable">$page</span></span>)  //<span class="title">emmm</span>类中<span class="title">checkFile</span>(<span class="params"></span>)方法，用于检查用户请求的文件是否合法</span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="variable">$whitelist</span> = [<span class="string">&quot;source&quot;</span>=&gt;<span class="string">&quot;source.php&quot;</span>,<span class="string">&quot;hint&quot;</span>=&gt;<span class="string">&quot;hint.php&quot;</span>];<span class="comment">//白名单设置，创建一个关联数组，白名单中值允许两个文件：&quot;source.php&quot; 和&quot;hint.php&quot;</span></span><br><span class="line">            <span class="keyword">if</span> (! <span class="keyword">isset</span>(<span class="variable">$page</span>) || !<span class="title function_ invoke__">is_string</span>(<span class="variable">$page</span>)) &#123;  <span class="comment">//检查参数$page是否存在(isset($page))和是否为字符串类型(is_string(&amp;page))</span></span><br><span class="line">                <span class="keyword">echo</span> <span class="string">&quot;you can&#x27;t see it&quot;</span>;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="title function_ invoke__">in_array</span>(<span class="variable">$page</span>, <span class="variable">$whitelist</span>)) &#123;    <span class="comment">//第一次白名单检查，直接检查整个$page是否在白名单($whitmlist数组)中</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;                      <span class="comment">//如果 $page 直接等于 source.php 或 hint.php，允许访问</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="variable">$_page</span> = <span class="title function_ invoke__">mb_substr</span>(               //截取<span class="variable">$page</span>从开头到第一次出现?的位置，例如：<span class="variable">$page</span>=<span class="string">&quot;source.php?aaaa&quot;</span> 则<span class="variable">$_page</span>=<span class="string">&quot;source.php&quot;</span></span><br><span class="line">                <span class="variable">$page</span>,                        </span><br><span class="line">                <span class="number">0</span>,</span><br><span class="line">                <span class="title function_ invoke__">mb_strpos</span>(<span class="variable">$page</span> . <span class="string">&#x27;?&#x27;</span>, <span class="string">&#x27;?&#x27;</span>)  //<span class="title function_ invoke__">mb_strpos</span>() 查找字符串中第一次出现 ? 的位置</span><br><span class="line">            );</span><br><span class="line">            <span class="keyword">if</span> (<span class="title function_ invoke__">in_array</span>(<span class="variable">$_page</span>, <span class="variable">$whitelist</span>)) &#123;   <span class="comment">//第二次白名单检查，截取?之前的部分($_page)检查是否在白名单中</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="variable">$_page</span> = <span class="title function_ invoke__">urldecode</span>(<span class="variable">$page</span>);        <span class="comment">//URL解码后再次检查，防止URL编码绕过，检查逻辑和上面一样</span></span><br><span class="line">            <span class="variable">$_page</span> = <span class="title function_ invoke__">mb_substr</span>(</span><br><span class="line">                <span class="variable">$_page</span>,</span><br><span class="line">                <span class="number">0</span>,</span><br><span class="line">                <span class="title function_ invoke__">mb_strpos</span>(<span class="variable">$_page</span> . <span class="string">&#x27;?&#x27;</span>, <span class="string">&#x27;?&#x27;</span>)</span><br><span class="line">            );</span><br><span class="line">            <span class="keyword">if</span> (<span class="title function_ invoke__">in_array</span>(<span class="variable">$_page</span>, <span class="variable">$whitelist</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;you can&#x27;t see it&quot;</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (! <span class="keyword">empty</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;file&#x27;</span>])                <span class="comment">//获取用户通过URL传参（GET请求或POST表单）提交的file参数</span></span><br><span class="line">        &amp;&amp; <span class="title function_ invoke__">is_string</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;file&#x27;</span>])           <span class="comment">//检查是否为字符串类型</span></span><br><span class="line">        &amp;&amp; emmm::<span class="title function_ invoke__">checkFile</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;file&#x27;</span>])     <span class="comment">//调用之前定义的检查函数checkFile()</span></span><br><span class="line">    ) &#123;</span><br><span class="line">        <span class="keyword">include</span> <span class="variable">$_REQUEST</span>[<span class="string">&#x27;file&#x27;</span>];   <span class="comment">//include 是 PHP 的文件包含函数，将指定文件的内容嵌入到当前脚本中执行，</span></span><br><span class="line">        <span class="keyword">exit</span>;                        <span class="comment">//如果用户导入的文件通过checkFile()函数,则执行文件中脚本            </span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;&lt;img src=\&quot;https://i.loli.net/2018/11/01/5bdb0d93dc794.jpg\&quot; /&gt;&quot;</span>;<span class="comment">//未通过的话显示这张图片</span></span><br><span class="line">    &#125;  </span><br><span class="line"><span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+<p>代码基本了解完毕，<br>主程序逻辑：<br>1.检查是否有file参数且为字符串，并通过checkFile()验证<br>2.如果验证通过，则包含该文件(include $_REQUEST[‘file’])<br>3.否则显示一张图片</p>
+<h3 id="构筑payload"><a href="#构筑payload" class="headerlink" title="构筑payload"></a>构筑payload</h3><p>我们要获得flag就必须利用这个脚本的漏洞去包含一个文件，但是那个文件是什么呢，回头看脚本中白名单whiteline中有一个”hint.php”文件还未访问，<br>访问获得<br><img src="warmup4.png"><br>提示很明显，flag在ffffllllaaaagggg文件中。<br><strong>payload</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?file=hint.php?../../../../../../ffffllllaaaagggg</span><br></pre></td></tr></table></figure>
+<p><img src="warmup5.png"><br>获得flag</p>
+<h4 id="为什么能获得flag"><a href="#为什么能获得flag" class="headerlink" title="为什么能获得flag"></a>为什么能获得flag</h4><h5 id="白名单绕过"><a href="#白名单绕过" class="headerlink" title="白名单绕过"></a>白名单绕过</h5><p>检查步骤：<br>1.直接检查（in_array($page, $whitelist)）：<br>hint.php?..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;ffffllllaaaagggg 不在白名单中，不通过。</p>
+<p>2.截取 ? 之前的部分检查：<br>$page &#x3D; “hint.php?..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;ffffllllaaaagggg”<br>mb_strpos() 找到第一个 ? 的位置，截取后得到 $_page &#x3D; “hint.php”。<br>“hint.php” 在白名单中，检查通过！</p>
+<h5 id="include文件包含机制"><a href="#include文件包含机制" class="headerlink" title="include文件包含机制"></a>include文件包含机制</h5><p>PHP 的 include 在包含文件时，会按照以下规则处理路径：<br><strong>file&#x3D;hint.php?..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;ffffllllaaaagggg</strong><br>PHP 的 include 在加载文件时，会尝试解析路径：<br>如果路径包含 ?，PHP 会将其视为 HTTP 查询参数，并尝试加载 ? 之前的部分（即 hint.php）。<br>但某些操作系统（如 Linux）的文件系统仍然会解析 ? 后面的部分，导致路径穿越生效。</p>
+<p>include(“hint.php?..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;ffffllllaaaagggg”);</p>
+<p>在某些环境下，PHP 会尝试加载：</p>
+<p>&#x2F;current_directory&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;ffffllllaaaagggg<br>即：<br>..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F; 会返回到根目录 &#x2F;<br>然后访问 ffffllllaaaagggg。</p>
+<p><strong>服务器文件结构：</strong><br>通常 CTF 题目会把 flag 放在根目录或深层次目录，例如：<br>&#x2F;flag<br>&#x2F;var&#x2F;www&#x2F;html&#x2F;flag<br>&#x2F;tmp&#x2F;flag</p>
+<p>..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F; 可以返回到根目录 &#x2F;，再访问目标文件。</p>
+<p><em><strong>另外发现一个有趣的东西</strong></em><br><img src="warmup6.png"><br>这个payload不在source.php文件下进行，但照样会获得flag,看网上很多文章都要在source.php文件下执行payload。</p>
+<p>include文件包含机制这块是我查很多文章和AI中我觉得比较能说服我的解释(个人实力有限)，推荐另一位师傅的文章：<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/2401_86598628/article/details/148697327">https://blog.csdn.net/2401_86598628/article/details/148697327</a><br>这篇文章会更加详细和include文件包含机制这块有不同的理解。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">半枫</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2025/07/18/WarmUp1/">http://example.com/2025/07/18/WarmUp1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">半枫</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/qq.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/07/19/Exec1/" title="BUUCTF-Web-[ACTF2020 新生赛]Exec 1"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">BUUCTF-Web-[ACTF2020 新生赛]Exec 1</div></div><div class="info-2"><div class="info-item-1">本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 下列知识点解释源自pikachu靶场（很好的web入门靶场） RCE漏洞RCE(remote command&#x2F;code execute)概述RCE漏洞，可以让攻击者直接向后台服务器远程注入操作系统命令或者代码，从而控制后台系统。 远程系统命令执行一般出现这种漏洞，是因为应用系统从设计上需要给用户提供指定的远程命令操作的接口比如我们常见的路由器、防火墙、入侵检测等设备的web管理界面上一般会给用户提供一个ping操作的web界面，用户从web界面输入目标IP，提交后，后台会对该IP地址进行一次ping测试，并返回测试结果。 而，如果，设计者在完成该功能时，没有做严格的安全控制，则可能会导致攻击者通过该接口提交“意想不到”的命令，从而让后台进行执行，从而控制整个后台服务器。 远程代码执行同样的道理,因为需求设计,后台有时候也会把用户的输入作为代码的一部分进行执行,也就造成了远程代码执行漏洞。 不管是使用了代码执行的函数,还是使用了不安全的反序列化等等。因此，如果需要给前端用户提供操作类的API接口，一...</div></div></div></a><a class="pagination-related" href="/2025/07/18/Include1/" title="BUUCTF-WEB-[ACTF2020 新生赛]Includ1"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">BUUCTF-WEB-[ACTF2020 新生赛]Includ1</div></div><div class="info-2"><div class="info-item-1">本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开环境，发现一个超链接跳转到一个新页面,只看到一个语句：can you find out the flag?查看两个页面的源码也没有什么可用信息，但注意一下该网页的URL,后面以GET请求访问文件flag.php想起题目内容Include,文件包含，试试伪协议 最常用的是php:&#x2F;&#x2F;filter (用于读取源码)php:&#x2F;&#x2F;filter的基本语法： 1php://filter/&lt;要应用的过滤器&gt;/resource=&lt;文件路径&gt; 过滤器：指定对数据流进行何种处理（如 convert.base64-encode）resource&#x3D;&lt;文件路径&gt;：指定要读取的文件（如 flag.php）本题就可编写一个常用的payload 1?file=php://filter/convert.base64-encoe/resource=flag.php flag会以base64编码形式出现，去网上随便搜索一个解码器获得flag php伪协议在...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">半枫</div><div class="author-info-description">Welcome to my blog</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">代码分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E7%AD%91payload"><span class="toc-number">2.</span> <span class="toc-text">构筑payload</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%83%BD%E8%8E%B7%E5%BE%97flag"><span class="toc-number">2.1.</span> <span class="toc-text">为什么能获得flag</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%99%BD%E5%90%8D%E5%8D%95%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.1.</span> <span class="toc-text">白名单绕过</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#include%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%9C%BA%E5%88%B6"><span class="toc-number">2.1.2.</span> <span class="toc-text">include文件包含机制</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/28/Nmap/" title="BUUCTF-Web-[网鼎杯 2020 朱雀组]Nmap">BUUCTF-Web-[网鼎杯 2020 朱雀组]Nmap</a><time datetime="2025-08-28T04:35:05.000Z" title="发表于 2025-08-28 12:35:05">2025-08-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/26/easy-serialize-php/" title="BUUCTF-Web-[安洵杯 2019]easy_serialize_php1">BUUCTF-Web-[安洵杯 2019]easy_serialize_php1</a><time datetime="2025-08-26T02:54:00.000Z" title="发表于 2025-08-26 10:54:00">2025-08-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/25/shrine/" title="BUUCTF-Web-[WesternCTF2018]shrine1">BUUCTF-Web-[WesternCTF2018]shrine1</a><time datetime="2025-08-25T12:35:07.000Z" title="发表于 2025-08-25 20:35:07">2025-08-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/24/easy-web/" title="BUUCTF-Web-[安洵杯 2019]easy_web">BUUCTF-Web-[安洵杯 2019]easy_web</a><time datetime="2025-08-24T13:56:21.000Z" title="发表于 2025-08-24 21:56:21">2025-08-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/24/PYWebsite/" title="BUUCTF-Web-[MRCTF2020]PYWebsite1">BUUCTF-Web-[MRCTF2020]PYWebsite1</a><time datetime="2025-08-24T08:30:34.000Z" title="发表于 2025-08-24 16:30:34">2025-08-24</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/preview.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By 半枫</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
