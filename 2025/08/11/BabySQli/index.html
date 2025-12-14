@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>BUUCTF-Web-[GXYCTF2019]BabySQli | 半枫</title><meta name="author" content="半枫"><meta name="copyright" content="半枫"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，看到一个登录界面，首先想到sql注入，回显sql报错，是一个注入点， 爆字段数，发现被过滤，经过测试，发现or，&#x3D;，()等都被过滤，()被过滤就到账报错注入、时间盲注、布尔盲注都不能使用，只剩下联合查询了，用大写过滤or过滤，字段数（列数）为3，查找回显字段位置，到这里就燃尽了（个人实力有限），试了很多方法，在回显">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BUUCTF-Web-[GXYCTF2019]BabySQli">
+<meta property="og:url" content="http://example.com/2025/08/11/BabySQli/index.html">
+<meta property="og:site_name" content="半枫">
+<meta property="og:description" content="本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，看到一个登录界面，首先想到sql注入，回显sql报错，是一个注入点， 爆字段数，发现被过滤，经过测试，发现or，&#x3D;，()等都被过滤，()被过滤就到账报错注入、时间盲注、布尔盲注都不能使用，只剩下联合查询了，用大写过滤or过滤，字段数（列数）为3，查找回显字段位置，到这里就燃尽了（个人实力有限），试了很多方法，在回显">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/qq.png">
+<meta property="article:published_time" content="2025-08-11T10:18:10.000Z">
+<meta property="article:modified_time" content="2025-08-11T12:50:53.951Z">
+<meta property="article:author" content="半枫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/qq.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "BUUCTF-Web-[GXYCTF2019]BabySQli",
+  "url": "http://example.com/2025/08/11/BabySQli/",
+  "image": "http://example.com/img/qq.png",
+  "datePublished": "2025-08-11T10:18:10.000Z",
+  "dateModified": "2025-08-11T12:50:53.951Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "半枫",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/qq.png"><link rel="canonical" href="http://example.com/2025/08/11/BabySQli/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'BUUCTF-Web-[GXYCTF2019]BabySQli',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/preview.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">78</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/preview.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">半枫</span></a><a class="nav-page-title" href="/"><span class="site-name">BUUCTF-Web-[GXYCTF2019]BabySQli</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">BUUCTF-Web-[GXYCTF2019]BabySQli</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-11T10:18:10.000Z" title="发表于 2025-08-11 18:18:10">2025-08-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-11T12:50:53.951Z" title="更新于 2025-08-11 20:50:53">2025-08-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><strong>本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助</strong></p>
+<p>打开靶机，看到一个登录界面，首先想到sql注入，<br><img src="BabySQli1.png"><br><img src="BabySQli2.png"><br>回显sql报错，是一个注入点，</p>
+<p>爆字段数，<br><img src="BabySQli3.png"><br><img src="BabySQli4.png"><br>发现被过滤，<br>经过测试，发现<code>or，=，()</code>等都被过滤，<code>()</code>被过滤就到账报错注入、时间盲注、布尔盲注都不能使用，<br>只剩下联合查询了，<br>用大写过滤<code>or</code>过滤，<br><img src="BabySQli5.png"><br><img src="BabySQli6.png"><br><img src="BabySQli7.png"><br><img src="BabySQli8.png"><br>字段数（列数）为3，<br>查找回显字段位置，<br><img src="BabySQli9.png"><br><img src="BabySQli10.png"><br>到这里就燃尽了（个人实力有限），试了很多方法，在回显那个页面，找到一个提示字段，<br><img src="BabySQli11.png"><br>先Base32再Base64解密，<br><img src="BabySQli12.png"><br>给了我们一个后端sql查询语句，</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">where</span> username <span class="operator">=</span><span class="string">&#x27;$name&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>查询只跟<code>name</code>字段有关，但是还是找不到突破口，看了很多wp都是要看看题目最开始给的源码地址，</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--MMZFM422K5HDASKDN5TVU3SKOZRFGQRRMMZFM6KJJBSG6WSYJJWESSCWPJNFQSTVLFLTC3CJIQYGOSTZKJ2VSVZRNRFHOPJ5--&gt;</span><br><span class="line">&lt;meta http-equiv=<span class="string">&quot;Content-Type&quot;</span> content=<span class="string">&quot;text/html; charset=utf-8&quot;</span> /&gt; </span><br><span class="line">&lt;title&gt;Do you know who am I?&lt;/title&gt;</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">&quot;config.php&quot;</span>; <span class="comment">//引入数据库配置文件(包含$con数据库连接)和flag文件(包含$flag变量)</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">&quot;flag.php&quot;</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 去除转义</span></span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">get_magic_quotes_gpc</span>()) &#123;</span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">stripslashes_deep</span>(<span class="params"><span class="variable">$value</span></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="variable">$value</span> = <span class="title function_ invoke__">is_array</span>(<span class="variable">$value</span>) ?</span><br><span class="line">		<span class="title function_ invoke__">array_map</span>(<span class="string">&#x27;stripslashes_deep&#x27;</span>, <span class="variable">$value</span>) :</span><br><span class="line">		<span class="title function_ invoke__">stripslashes</span>(<span class="variable">$value</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="variable">$value</span>;</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	<span class="variable">$_POST</span> = <span class="title function_ invoke__">array_map</span>(<span class="string">&#x27;stripslashes_deep&#x27;</span>, <span class="variable">$_POST</span>);</span><br><span class="line">	<span class="variable">$_GET</span> = <span class="title function_ invoke__">array_map</span>(<span class="string">&#x27;stripslashes_deep&#x27;</span>, <span class="variable">$_GET</span>);</span><br><span class="line">	<span class="variable">$_COOKIE</span> = <span class="title function_ invoke__">array_map</span>(<span class="string">&#x27;stripslashes_deep&#x27;</span>, <span class="variable">$_COOKIE</span>);</span><br><span class="line">	<span class="variable">$_REQUEST</span> = <span class="title function_ invoke__">array_map</span>(<span class="string">&#x27;stripslashes_deep&#x27;</span>, <span class="variable">$_REQUEST</span>);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$con</span>,<span class="string">&#x27;SET NAMES UTF8&#x27;</span>);</span><br><span class="line"><span class="variable">$name</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;name&#x27;</span>];  <span class="comment">//POST请求传入name,password两个参数</span></span><br><span class="line"><span class="variable">$password</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;pw&#x27;</span>];</span><br><span class="line"><span class="variable">$t_pw</span> = <span class="title function_ invoke__">md5</span>(<span class="variable">$password</span>); <span class="comment">//对密码进行MD5哈希计算(不安全)</span></span><br><span class="line"><span class="variable">$sql</span> = <span class="string">&quot;select * from user where username = &#x27;&quot;</span>.<span class="variable">$name</span>.<span class="string">&quot;&#x27;&quot;</span>;<span class="comment">//查询只跟name有关</span></span><br><span class="line"><span class="comment">// echo $sql;</span></span><br><span class="line"><span class="variable">$result</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$con</span>, <span class="variable">$sql</span>);</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span>(<span class="title function_ invoke__">preg_match</span>(<span class="string">&quot;/\(|\)|\=|or/&quot;</span>, <span class="variable">$name</span>))&#123;   <span class="comment">//过滤特殊字符</span></span><br><span class="line">	<span class="keyword">die</span>(<span class="string">&quot;do not hack me!&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (!<span class="variable">$result</span>) &#123;</span><br><span class="line">    <span class="title function_ invoke__">printf</span>(<span class="string">&quot;Error: %s\n&quot;</span>, <span class="title function_ invoke__">mysqli_error</span>(<span class="variable">$con</span>));  <span class="comment">// 显示数据库错误(不安全)</span></span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable">$arr</span> = <span class="title function_ invoke__">mysqli_fetch_row</span>(<span class="variable">$result</span>);  <span class="comment">// 获取查询结果行（arr以数组形式分别储存传入的三个字段）</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(<span class="variable">$arr</span>[<span class="number">1</span>] == <span class="string">&quot;admin&quot;</span>) &#123;          <span class="comment">// 检查用户名是否为admin</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="title function_ invoke__">md5</span>(<span class="variable">$password</span>) == <span class="variable">$arr</span>[<span class="number">2</span>]) &#123;  <span class="comment">// 验证密码MD5哈希</span></span><br><span class="line">            <span class="keyword">echo</span> <span class="variable">$flag</span>;                <span class="comment">// 验证成功返回flag</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">&quot;wrong pass!&quot;</span>);        <span class="comment">// 密码错误</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">&quot;wrong user!&quot;</span>);            <span class="comment">// 用户名错误</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>一般三个字段为<code>id,username,password</code>，<br>构筑payload：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#x27; union select 1,&#x27;admin&#x27;,&#x27;c4ca4238a0b923820dcc509a6f75849b&#x27;#</span><br></pre></td></tr></table></figure>
+<p>这里我password框传入的是<code>1</code>，所以payload第三个字段（password字段）为md5值为c4ca4238a0b923820dcc509a6f75849b（1的md5值），<br>passwdord框传入的值你可以随便填，字段3填上对应的md5的值即可，因为passwdord框传入的值就是POST传入的pw参数，<br><img src="BabySQli13.png"><br><img src="BabySQli14.png"><br>获得flag，没看源码真找不到思路</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">半枫</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2025/08/11/BabySQli/">http://example.com/2025/08/11/BabySQli/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">半枫</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/qq.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/08/12/Blacklist/" title="BUUCTF-Web-[GYCTF2020]Blacklist"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">BUUCTF-Web-[GYCTF2020]Blacklist</div></div><div class="info-2"><div class="info-item-1">本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，看到一个查询入口，回显sql报错，是一个字符型注入点，用万能语句爆一下表， 爆字段数确定字段数（列数）为2， 爆数据库名发现被过滤很多敏感词，尝试堆叠注入， 爆表名先尝试当前处于的数据库下，发现FlagHere， 爆列名11&#x27;;show colunms from FlagHere;#  爆flag因为rename函数被过滤，无法进行改表操作，但我们可以用handler函数查询， 11&#x27;;handler FlagHere open;handler FlagHere read next;# 获得flag </div></div></div></a><a class="pagination-related" href="/2025/08/10/CheckIn/" title="BUUCTF-Web-[SUCTF 2019]CheckIn1"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">BUUCTF-Web-[SUCTF 2019]CheckIn1</div></div><div class="info-2"><div class="info-item-1">本文为记录个人信安小白的刷题路程，大佬勿喷，也同时希望文章能对您有所帮助 打开靶机，是文件上传漏洞题，上传测试文件看看文件限制，php,phtml等php文件格式都被过滤，Burp抓包修改Content-Type字段也不行，猜测为文件头检测过滤，上传图片木马试试，文件开头添加GIF89jpg文件头绕过， 12GIF89&lt;script language=&quot;php&quot;&gt;@eval($_POST[&#x27;cmd&#x27;]); &lt;/script&gt; 上传成功，接下来需要木马文件（TEST.jpg）被当做php文件解析执行，上传目录配置文件.htaccess，也需要加上GIF89或GIF89ajpg文件头， 1234GIF89&lt;IfModule mime_module&gt;AddType application/x-httpd-php .jpg&lt;/IfModule&gt; 上传成功，但是访问文件TEST.jpg并没有被php解析执行，可能.htaccess被过滤了还有另一个目录配置文件.user.ini.user.ini 是 P...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">半枫</div><div class="author-info-description">Welcome to my blog</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">78</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/13/%E6%B8%97%E9%80%8F%E4%BD%9C%E4%B8%9A-%E8%BF%9C%E7%A8%8B%E6%8E%A7%E5%88%B6/" title="渗透作业-远程控制">渗透作业-远程控制</a><time datetime="2025-12-13T08:22:12.000Z" title="发表于 2025-12-13 16:22:12">2025-12-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/08/TCP53%E7%AB%AF%E5%8F%A3%E5%92%8CUDP53%E7%AB%AF%E5%8F%A3/" title="TCP53端口和UDP53端口">TCP53端口和UDP53端口</a><time datetime="2025-12-08T04:28:19.000Z" title="发表于 2025-12-08 12:28:19">2025-12-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/01/%E4%B8%BB%E5%8A%A8%E6%89%AB%E6%8F%8F%E5%B7%A5%E5%85%B7Nmap/" title="主动扫描工具Nmap">主动扫描工具Nmap</a><time datetime="2025-12-01T02:40:27.000Z" title="发表于 2025-12-01 10:40:27">2025-12-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/23/%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E/" title="网络空间搜索引擎">网络空间搜索引擎</a><time datetime="2025-11-23T05:51:18.000Z" title="发表于 2025-11-23 13:51:18">2025-11-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/22/%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E6%93%8D%E4%BD%9CAPI-GetEnvironmentStrings%E4%B8%8EFreeEnvironmentStrings/" title="环境变量操作API-GetEnvironmentStrings与FreeEnvironmentStrings">环境变量操作API-GetEnvironmentStrings与FreeEnvironmentStrings</a><time datetime="2025-11-22T02:40:00.000Z" title="发表于 2025-11-22 10:40:00">2025-11-22</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/preview.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By 半枫</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
