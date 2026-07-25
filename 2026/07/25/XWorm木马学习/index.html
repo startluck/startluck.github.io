@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>XWorm木马学习 | 半枫</title><meta name="author" content="半枫"><meta name="copyright" content="半枫"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="近期静态代码逆向分析了一款流传极广的商业化.NET远控木马XWorm V6，学习XWorm完整架构、7 大核心模块、通信加密、窃密、持久化、对抗沙箱 &#x2F; 杀毒全套能力，记录逆向分析思路与恶意技术点。 一、样本基础信息与整体架构设计基础特征 开发语言：C#&#96;&#96;.NET Framework，可加壳混淆，静态识别难度高 家族归属：XWorm V6商业远控RAT，黑产付费生成器产出，配套完整插件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XWorm木马学习">
+<meta property="og:url" content="http://example.com/2026/07/25/XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="半枫">
+<meta property="og:description" content="近期静态代码逆向分析了一款流传极广的商业化.NET远控木马XWorm V6，学习XWorm完整架构、7 大核心模块、通信加密、窃密、持久化、对抗沙箱 &#x2F; 杀毒全套能力，记录逆向分析思路与恶意技术点。 一、样本基础信息与整体架构设计基础特征 开发语言：C#&#96;&#96;.NET Framework，可加壳混淆，静态识别难度高 家族归属：XWorm V6商业远控RAT，黑产付费生成器产出，配套完整插件">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/qq.png">
+<meta property="article:published_time" content="2026-07-25T06:25:00.000Z">
+<meta property="article:modified_time" content="2026-07-25T07:54:36.793Z">
+<meta property="article:author" content="半枫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/qq.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "XWorm木马学习",
+  "url": "http://example.com/2026/07/25/XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A0/",
+  "image": "http://example.com/img/qq.png",
+  "datePublished": "2026-07-25T06:25:00.000Z",
+  "dateModified": "2026-07-25T07:54:36.793Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "半枫",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/qq.png"><link rel="canonical" href="http://example.com/2026/07/25/XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'XWorm木马学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/preview.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/preview.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">半枫</span></a><a class="nav-page-title" href="/"><span class="site-name">XWorm木马学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">XWorm木马学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-25T06:25:00.000Z" title="发表于 2026-07-25 14:25:00">2026-07-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-25T07:54:36.793Z" title="更新于 2026-07-25 15:54:36">2026-07-25</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>近期静态代码逆向分析了一款流传极广的商业化<code>.NET</code>远控木马<code>XWorm V6</code>，学习<code>XWorm</code>完整架构、7 大核心模块、通信加密、窃密、持久化、对抗沙箱 &#x2F; 杀毒全套能力，记录逆向分析思路与恶意技术点。</p>
+<h3 id="一、样本基础信息与整体架构设计"><a href="#一、样本基础信息与整体架构设计" class="headerlink" title="一、样本基础信息与整体架构设计"></a>一、样本基础信息与整体架构设计</h3><h4 id="基础特征"><a href="#基础特征" class="headerlink" title="基础特征"></a>基础特征</h4><ul>
+<li>开发语言：<code>C#``.NET Framework</code>，可加壳混淆，静态识别难度高</li>
+<li>家族归属：<code>XWorm V6</code>商业远控<code>RAT</code>，黑产付费生成器产出，配套完整插件拓展体系</li>
+<li>核心设计思路：分层模块化解耦，每个模块职责独立；全链路流量加密；注册表二进制持久化；内置完整反杀毒、自毁、无文件加载对抗手段</li>
+</ul>
+<h4 id="七大核心模块总览"><a href="#七大核心模块总览" class="headerlink" title="七大核心模块总览"></a>七大核心模块总览</h4><p>程序整体拆分为 7 个独立类，执行流程遵循「入口初始化→通信建立→指令调度→插件拓展→窃密采集→底层工具支撑」逻辑：</p>
+<ol>
+<li><code>ProgramEntry</code>：程序入口、反沙箱初始化</li>
+<li><code>NetworkService</code>：C2 TCP 长连接、心跳、主机信息采集上报</li>
+<li><code>CommandRouter</code>：核心指令分发器，24 类远程攻击指令调度</li>
+<li><code>AppUpdater</code>：杀毒对抗、木马更新、自销毁清理痕迹</li>
+<li><code>Plugin</code>：插件内存加载引擎，进程注入、UAC 绕过拓展</li>
+<li><code>InputTracker</code>：全局键盘钩子窃密模块</li>
+<li><code>Helper+EncryptionService</code>：底层工具库、AES 加密、GZip 压缩、注册表 &#x2F; 硬件指纹工具</li>
+</ol>
+<h3 id="二、分模块逆向学习：功能、代码逻辑、恶意原理"><a href="#二、分模块逆向学习：功能、代码逻辑、恶意原理" class="headerlink" title="二、分模块逆向学习：功能、代码逻辑、恶意原理"></a>二、分模块逆向学习：功能、代码逻辑、恶意原理</h3><h4 id="模块-1：ProgramEntry-程序入口（反分析前置层）"><a href="#模块-1：ProgramEntry-程序入口（反分析前置层）" class="headerlink" title="模块 1：ProgramEntry 程序入口（反分析前置层）"></a>模块 1：ProgramEntry 程序入口（反分析前置层）</h4><p>程序执行第一入口，所有对抗沙箱、环境校验逻辑集中在此，规避自动化沙箱快速检测。<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A01.png" alt="Main入口代码"></p>
+<p>核心逻辑：</p>
+<ol>
+<li><strong>全局异常捕获</strong>：注册全局异常处理器，程序崩溃不会弹出报错窗口，避免暴露异常特征；</li>
+<li><strong>随机延时休眠</strong>：读取配置最小 &#x2F; 最大延时区间，随机等待一段时间再执行核心逻辑，对抗沙箱短时间行为检测；</li>
+<li><strong>配置解密校验</strong>：内置 C2 地址、密钥等硬编码配置，运行时动态解密，静态直接读代码无法提取控制地址；</li>
+<li><strong>单实例互斥体校验</strong>：调用 Helper 创建系统互斥体，重复运行直接退出，防止多进程暴露；</li>
+<li><strong>阻止系统休眠</strong>：调用 Windows API <code>SetThreadExecutionState</code>，持续保持主机唤醒，保证木马 24 小时后台在线。</li>
+</ol>
+<h4 id="模块-2：AppUpdater-安全对抗-自销毁模块"><a href="#模块-2：AppUpdater-安全对抗-自销毁模块" class="headerlink" title="模块 2：AppUpdater 安全对抗 + 自销毁模块"></a>模块 2：AppUpdater 安全对抗 + 自销毁模块</h4><p>该模块是<code>XWorm</code>标志性高危对抗功能，主动削弱终端防护、实现无痕清除。<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A02.png" alt="删除杀毒QoS策略代码"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A03.png" alt="自删BAT生成代码"><br>两大核心能力：</p>
+<ol>
+<li><strong>批量清除主流杀毒软件流量管控策略</strong><br>静默调用隐藏窗口 PowerShell，批量删除 360、火绒、Windows Defender、卡巴斯基、趋势科技的 NetQoS 流量策略，破坏安全软件流量审计、行为监控能力，让木马加密 C2 流量无法被识别。</li>
+<li><strong>木马远程更新 + 一键自毁清理</strong><ul>
+<li>更新功能：接收 C2 下发 Base64 二进制载荷，生成 6 位随机字符命名临时文件替换本体；</li>
+<li>自毁机制：远程触发<code>uninstall</code>指令时，在系统临时目录生成隐藏 BAT 脚本，脚本自动删除木马本体、临时载荷，进程退出后无任何残留文件，实现 “查杀无尸”。</li>
+</ul>
+</li>
+</ol>
+<h4 id="模块-3：CommandRouter-指令调度中枢（24-类攻击指令合集）"><a href="#模块-3：CommandRouter-指令调度中枢（24-类攻击指令合集）" class="headerlink" title="模块 3：CommandRouter 指令调度中枢（24 类攻击指令合集）"></a>模块 3：CommandRouter 指令调度中枢（24 类攻击指令合集）</h4><p>木马核心控制分发单元，接收 C2 加密数据包，解密、校验参数后分发对应攻击逻辑，所有远程操作均由该类调度，内置参数校验机制，非法指令会向 C2 上报错误日志。<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A04.png" alt="命令参数检验逻辑"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A05.png" alt="指令分发相关代码"><br>将24条指令按攻击用途分为6大类，<br>（1）网络心跳与主机识别</p>
+<ul>
+<li><code>pong</code>：响应服务器心跳包，维持 TCP 长连接保活；</li>
+<li><code>Xchat</code>：上报硬件 HWID 唯一标识，区分每一台被控主机。</li>
+</ul>
+<p>（2）整机远程系统控制</p>
+<ul>
+<li><code>rec</code>：重启木马程序；<code>CLOSE</code>：断开 C2 连接并退出进程；</li>
+<li><code>uninstall</code>：调用 AppUpdater 完成卸载、自删、清理注册表插件；</li>
+<li><code>PCShutdown/PCRestart/PCLogoff</code>：调用系统 shutdown 命令，强制关机 &#x2F; 重启 &#x2F; 注销用户；</li>
+<li><code>RunShell</code>：无窗口静默执行 CMD、PowerShell 任意系统命令。</li>
+</ul>
+<p>（3）恶意载荷下发与隐蔽执行（免杀核心）<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A06.png" alt="LN远程下载执行代码"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A07.png" alt="FM内存无文件加载代码"></p>
+<ul>
+<li><code>update</code>：远程下发新版本程序，替换木马本体完成更新；</li>
+<li><code>DW</code>：接收 Base64 二进制落地随机临时文件执行；</li>
+<li><code>LN</code>：启用 TLS1.2 协议，从远程 URL 下载文件本地运行；</li>
+<li><code>FM</code>：无文件攻击核心，直接内存加载.NET 程序集，不落地磁盘，绕过文件静态查杀。</li>
+</ul>
+<p>（4）网络劫持与隐蔽访问</p>
+<ul>
+<li><code>Urlopen</code>：默认浏览器打开指定钓鱼 URL；</li>
+<li><code>Urlhide</code>：后台静默发起 HTTP 请求，无窗口，用于点击欺诈、内网探测；</li>
+<li><code>Hosts/Shosts</code>：读取 &#x2F; 覆写系统<code>C:\Windows\System32\drivers\etc\hosts</code>，篡改域名解析劫持流量</li>
+</ul>
+<p>（5）持久化插件管理（长效驻留）</p>
+<ul>
+<li><code>savePlugin</code>：将插件 Base64 数据加密存入注册表持久化；</li>
+<li><code>plugin</code>：读取注册表二进制插件，内存加载运行；</li>
+<li><code>RemovePlugins</code>：清空注册表全部驻留插件，清理后门痕迹。</li>
+</ul>
+<p>（6）实时监控、截屏、日志窃取<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A08.png" alt="截图压缩上传代码"></p>
+<ul>
+<li><code>StartReport/StopReport</code>：独立后台线程每秒遍历窗口标题，匹配银行、支付、加密货币等关键词，触发后主动上报；</li>
+<li><code>$Cap</code>：全屏截图，压缩为 256×156 低色深 JPG 缩略图，Base64 加密上传 C2，降低流量体积；</li>
+<li><code>OfflineGet</code>：读取本地键盘记录缓存日志，批量回传服务器。</li>
+</ul>
+<h4 id="模块-4：Plugin-插件动态加载引擎（拓展攻击能力）"><a href="#模块-4：Plugin-插件动态加载引擎（拓展攻击能力）" class="headerlink" title="模块 4：Plugin 插件动态加载引擎（拓展攻击能力）"></a>模块 4：Plugin 插件动态加载引擎（拓展攻击能力）</h4><p>XWorm 本体仅保留基础远控能力，高风险攻击全部通过插件动态加载，降低主程序静态特征。通过反射加载内存程序集，内置 7 类插件标准接口：<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A09.png" alt="插件反射加载代码"></p>
+<ol>
+<li><code>Run</code>：插件基础入口，传入 C2 地址、加密密钥、设备 ID；</li>
+<li><code>RunRecovery</code>：带状态恢复加载插件；</li>
+<li><code>RunOptions</code>：读取插件内置配置；</li>
+<li><code>injRun</code>：进程注入，将恶意代码注入系统可信进程隐藏；</li>
+<li><code>UACFunc</code>：Windows 账户控制权限绕过，获取管理员权限；</li>
+<li><code>ENC/DEC</code>：建立 &#x2F; 关闭独立加密通信隧道，隔离流量特征。</li>
+</ol>
+<h4 id="模块-5：InputTracker-全局键盘记录窃密模块"><a href="#模块-5：InputTracker-全局键盘记录窃密模块" class="headerlink" title="模块 5：InputTracker 全局键盘记录窃密模块"></a>模块 5：InputTracker 全局键盘记录窃密模块</h4><p>信息泄露核心模块，基于 Windows 底层低级键盘钩子实现全系统按键捕获，无窗口后台静默运行。<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A010.png" alt="键盘钩子回调逻辑"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A011.png" alt="获取前台窗口进程名"><br>核心窃取逻辑：</p>
+<ol>
+<li>安装全局键盘钩子，捕获所有软件窗口下全部按键；</li>
+<li>区分大小写、回车、Ctrl&#x2F;Shift&#x2F;Alt、Tab 等功能键，完整还原输入内容；</li>
+<li>每次按键同步采集当前前台窗口标题、进程名，区分网银、聊天、支付软件场景；</li>
+<li>本地持久化缓存日志，网络恢复后批量上传至黑客服务器。</li>
+</ol>
+<h4 id="模块-6：NetworkService-C2-通信核心"><a href="#模块-6：NetworkService-C2-通信核心" class="headerlink" title="模块 6：NetworkService C2 通信核心"></a>模块 6：NetworkService C2 通信核心</h4><p><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A012.png" alt="多C2地址轮询连接"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A014.png" alt="主机信息采集逻辑"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A015.png" alt="WMI查询杀毒软件"><br>木马数据收发中枢，TCP 异步长连接，负责和黑客控制服务器交互、主机资产全量采集上报。</p>
+<ol>
+<li><strong>高容错连接机制</strong>：内置多组 C2 域名 &#x2F; IP 池，随机轮询连接，断线自动释放资源、重试重连；</li>
+<li><strong>周期性心跳保活</strong>：每 10~15 秒发送 PING 包，携带当前前台窗口、用户空闲时长，服务器返回 pong 维持会话；</li>
+<li><strong>上线全维度资产侦查</strong><br>通过 WMI、系统 API 自动采集主机信息，首次上线完整上报：<ul>
+<li>硬件：CPU 型号、显卡、内存大小、硬盘序列号；</li>
+<li>网络：公网出口 IP（调用亚马逊、ipify 接口获取）；</li>
+<li>安全环境：查询本地已安装杀毒软件清单；</li>
+<li>系统权限：操作系统版本、登录用户名、是否管理员、摄像头、USB 设备状态；</li>
+</ul>
+</li>
+<li><strong>数据包封装规范</strong>：统一「4 字节长度头 + AES 加密载荷」结构，异步收发，防止粘包、丢包</li>
+</ol>
+<h4 id="模块-7：Helper-EncryptionService-底层工具支撑库"><a href="#模块-7：Helper-EncryptionService-底层工具支撑库" class="headerlink" title="模块 7：Helper + EncryptionService 底层工具支撑库"></a>模块 7：Helper + EncryptionService 底层工具支撑库</h4><p>全木马通用工具类，提供加密、压缩、注册表、硬件指纹、进程管理全套基础能力，是所有模块的底层依赖。</p>
+<ol>
+<li>通信加密体系<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A016.png" alt="AES解密实现"><br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A017.png" alt="GZip压缩代码"></li>
+</ol>
+<ul>
+<li>加密：AES-CBC 模式，MD5 派生密钥，数据包携带 16 字节 IV 向量；</li>
+<li>压缩：GZip 压缩上下行载荷，减小流量体积，隐藏特征；</li>
+<li>数据包格式：长度头 + 压缩二进制 + AES 加密。</li>
+</ul>
+<ol start="2">
+<li><p>硬件设备指纹（HWID）<br>读取硬盘序列号、网卡 MAC 地址拼接生成 20 位唯一设备 ID，黑客用于批量管理上万台被控主机，区分不同受害者。<br><img src="XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A018.png" alt="HWID硬件指纹生成代码"></p>
+</li>
+<li><p>注册表长效持久化<br>存储路径：<code>HKEY_CURRENT_USER\Software\[设备HWID]</code>，以 REG_BINARY 二进制格式存储插件、恶意配置，重启后木马读取注册表自动加载后门，区别于易查杀的启动项。</p>
+</li>
+<li><p>进程与环境辅助工具</p>
+</li>
+</ol>
+<ul>
+<li>互斥体单实例控制：防止多开暴露；</li>
+<li>用户空闲时长检测：等待无人操作时执行截屏、键盘记录等高敏感操作；</li>
+<li>随机 6 位小写字符串生成：用于临时恶意文件命名，规避静态特征；</li>
+<li>摄像头检测：调用 avicap32.dll 接口识别摄像头硬件，为偷拍插件提供前置判断</li>
+</ul>
+<h3 id="三、攻击链"><a href="#三、攻击链" class="headerlink" title="三、攻击链"></a>三、攻击链</h3><h4 id="阶段一：隐秘进驻与初始化对抗-ProgramEntry-Helper"><a href="#阶段一：隐秘进驻与初始化对抗-ProgramEntry-Helper" class="headerlink" title="阶段一：隐秘进驻与初始化对抗 (ProgramEntry + Helper)"></a>阶段一：隐秘进驻与初始化对抗 (ProgramEntry + Helper)</h4><p>•	反沙箱&#x2F;反分析：启动时执行随机延时（分三段休眠，消耗CPU时间模拟正常负载），并执行随机无害系统操作（如获取磁盘空间）以干扰行为分析。全局异常捕获确保任何崩溃都不会弹窗暴露。<br>•	环境占领：通过 SetThreadExecutionState API 阻止系统休眠，保证后门7x24小时在线。同时立即启动互斥体检查，防止多开暴露。<br>•	配置自解密：C2地址、密钥等敏感配置均以密文硬编码，运行时动态解密加载至 Settings，避免静态分析直接提取。</p>
+<h4 id="阶段二：C2会话建立与主机信息采集-NetworkService-Helper"><a href="#阶段二：C2会话建立与主机信息采集-NetworkService-Helper" class="headerlink" title="阶段二：C2会话建立与主机信息采集 (NetworkService + Helper)"></a>阶段二：C2会话建立与主机信息采集 (NetworkService + Helper)</h4><p>•	弹性连接：内置多组C2域名&#x2F;IP，随机轮询。使用 异步TCP长连接，具备资源清理和自动重连机制，确保连接鲁棒性。<br>•	首次“挂号”：木马上线后，立即构造一个包含全面资产信息的注册包。内容不仅包括常规的CPU、GPU、内存、系统版本、用户名、权限、公网出口IP，更关键的是：<br>    o	HWID指纹：基于硬盘序列号、MAC地址等生成的20位唯一硬件ID，用于区分、标识和管理每台受害主机。<br>    o	安全环境侦查：通过WMI查询 AntiVirusProduct，获取已安装的杀毒软件列表。这为攻击者后续决定是否下发针对性的免杀插件或规避动作提供了关键决策依据。<br>    o	外设检测：检查摄像头和USB设备状态，标记高价值目标（如存在摄像头可用于偷拍）。<br>•	心跳维持与监控：周期性发送心跳包，并捎带上报用户空闲时间与当前活动窗口标题，让攻击者掌握操作时机，选择在用户不活动时执行敏感操作。</p>
+<h4 id="阶段三：指令调度与功能适变-CommandRouter-Plugin-AppUpdater-这是木马的大脑，CommandRouter-Read-解密后根据指令码分发。其功能并非孤立，而是体现攻击者的战术意图："><a href="#阶段三：指令调度与功能适变-CommandRouter-Plugin-AppUpdater-这是木马的大脑，CommandRouter-Read-解密后根据指令码分发。其功能并非孤立，而是体现攻击者的战术意图：" class="headerlink" title="阶段三：指令调度与功能适变 (CommandRouter + Plugin + AppUpdater) 这是木马的大脑，CommandRouter.Read() 解密后根据指令码分发。其功能并非孤立，而是体现攻击者的战术意图："></a>阶段三：指令调度与功能适变 (CommandRouter + Plugin + AppUpdater) 这是木马的大脑，CommandRouter.Read() 解密后根据指令码分发。其功能并非孤立，而是体现攻击者的战术意图：</h4><ol>
+<li>   侦察与信息窃取（战术：Discovery, Collection）<br>  o	$Cap：智能屏幕截图。并非原样上传，而是生成256x156缩略图，并转为低色彩深度(16bppRgb555)，极大压缩体积，便于低频宽网络下快速窥屏。<br>  o	StartReport：精准钓鱼监控。攻击者下发关键词列表（如“银行”、“支付”、“Coinbase”），木马会开启后台线程，每秒扫描当前活动窗口标题。一旦命中，立即触发警报上报。这是从被动日志到主动猎取的升华，专门用于捕获用户进行敏感操作的瞬间。<br>  o	OfflineGet：离线日志回传。木马本地记录的所有操作日志（包括键盘记录）均可离线存储，等待攻击者读取，防止因网络中断丢失数据。</li>
+<li>   载荷投递与代码执行（战术：Execution, Defense Evasion）<br>  o	FM（无文件攻击）：CommandRouter 接收Base64压缩的 .NET 程序集，直接调用 Plugin 引擎的 Memory() 方法，通过 Assembly.Load 在内存中反射加载并执行，全程无文件落地。这是该木马对抗文件查杀的核心手段。<br>  o	DW &#x2F; LN：常规落地执行。为兼容非 .NET 载荷，支持将数据写入随机命名的临时文件执行，或直接使用 WebClient 从指定URL下载执行。<br>  o	update &#x2F; rec &#x2F; uninstall：自身生命周期管理。攻击者可随时下发新版木马完成无缝更替；或在意图撤离时，远程触发其自毁机制。</li>
+<li>   持久化与扩展（战术：Persistence, Lateral Movement）<br>  o	savePlugin &#x2F; plugin：插件化持久化。攻击者可将自定义的 .NET 程序集（DLL）通过Base64下发，并以二进制形式存入注册表。Plugin引擎的Run, injRun, UACFunc等方法为插件提供了丰富的运行环境：标准执行、注入到指定进程、绕过UAC执行。<br>  o	Hosts &#x2F; Shosts：域名劫持。可直接读取或覆写系统Hosts文件，用于劫持特定域名解析，实现隐蔽的网络钓鱼或阻止安全软件更新。<br>  o	Urlhide：隐蔽层网络请求。通过后台发起HTTP请求，可无痕访问C2指定的恶意URL，用于发起DDoS攻击、点击欺诈或代理渗透。</li>
+</ol>
+<h4 id="阶段四：痕迹清理与对抗强化-AppUpdater-Helper"><a href="#阶段四：痕迹清理与对抗强化-AppUpdater-Helper" class="headerlink" title="阶段四：痕迹清理与对抗强化 (AppUpdater + Helper)"></a>阶段四：痕迹清理与对抗强化 (AppUpdater + Helper)</h4><p>•	主动防御削减：AppUpdater.UNS() 在执行更新或卸载时，会主动通过PowerShell命令删除360、卡巴斯基、Defender、火绒、趋势科技等安全软件的 QoS流量调度策略。其目的是破坏这些软件对流量行为的监控和限制能力，为木马的流量通讯“疏通道路”。<br>•	彻底自毁：自毁逻辑生成一个隐藏批处理脚本，在进程退出后，由该脚本删除木马本体及临时文件，实现“查杀无尸”。</p>
+<h3 id="四、XWorm-核心对抗技术学习总结"><a href="#四、XWorm-核心对抗技术学习总结" class="headerlink" title="四、XWorm 核心对抗技术学习总结"></a>四、XWorm 核心对抗技术学习总结</h3><ol>
+<li><strong>主动破坏终端防护</strong>：PowerShell 静默删除主流杀毒流量 QoS 策略，削弱流量监控能力；</li>
+<li><strong>无文件落地规避查杀</strong>：FM 指令内存加载.NET 程序集，全程不写入磁盘，绕过静态文件查杀；</li>
+<li><strong>全流量加密隐匿</strong>：AES+GZip 封装 C2 通信，流量无明文指令，流量审计难以识别；</li>
+<li><strong>注册表隐形持久化</strong>：二进制存储插件，区别于常规启动项，不易被基线巡检发现；</li>
+<li><strong>全流程隐蔽运行</strong>：CMD、PowerShell、网络请求、截屏、键盘记录全部隐藏窗口，用户无感知；</li>
+<li><strong>沙箱 &#x2F; 人工分析对抗</strong>：启动随机延时、全局异常静默捕获、单实例互斥体；</li>
+<li><strong>入侵痕迹一键清除</strong>：自删 BAT 脚本删除本体、临时文件、注册表持久项，无残留；</li>
+<li><strong>进程注入拓展隐藏</strong>：插件 injRun 接口将恶意代码注入系统进程，规避进程特征检测。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">半枫</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/25/XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A0/">http://example.com/2026/07/25/XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">半枫</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/qq.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/06/09/Windows%E6%8F%90%E6%9D%83%E5%AD%A6%E4%B9%A0/" title="Windows提权学习"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Windows提权学习</div></div><div class="info-2"><div class="info-item-1">1. 攻击思路概述在Windows攻击链中，许多看似基础的提权手段依然频繁奏效。在缺乏可用漏洞或需避免高风险内核操作时，攻击者会试图让提权看起来像系统应有的行为，以避免打断用户或触发告警。因此，“进程伪装”常被用于提权之前。攻击者通过塑造“合理的进程身份”而非单纯隐藏，来让EDR 、AV等防护产品和分析人员误以为其后续操作是合规的。 提权不只是技术问题，而是关于身份与信任的问题： Who：请求者的身份是否合法？  Why &amp; When：请求的时机与理由是否成立？  Logic：在现有流程中，该行为是否突兀？  攻击者在不利用内核漏洞的前提下，通过篡改进程用户态 PEB（Process Environment Block）信息伪装成可信系统进程（如 explorer.exe），欺骗Windows的AppInfo服务（AIS），使其认为请求来自白名单进程，从而绕过UAC弹窗静默提权。 核心链条：PEB伪装（ImagePath + CommandLine +LDR链表）→ 调用CMSTPLUA COM组件（Elevation Moniker）→ AppInfo被PEB欺骗 → ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">半枫</div><div class="author-info-description">Welcome to my blog</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A0%B7%E6%9C%AC%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF%E4%B8%8E%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.</span> <span class="toc-text">一、样本基础信息与整体架构设计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E7%89%B9%E5%BE%81"><span class="toc-number">1.1.</span> <span class="toc-text">基础特征</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%83%E5%A4%A7%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97%E6%80%BB%E8%A7%88"><span class="toc-number">1.2.</span> <span class="toc-text">七大核心模块总览</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%88%86%E6%A8%A1%E5%9D%97%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%EF%BC%9A%E5%8A%9F%E8%83%BD%E3%80%81%E4%BB%A3%E7%A0%81%E9%80%BB%E8%BE%91%E3%80%81%E6%81%B6%E6%84%8F%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">二、分模块逆向学习：功能、代码逻辑、恶意原理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-1%EF%BC%9AProgramEntry-%E7%A8%8B%E5%BA%8F%E5%85%A5%E5%8F%A3%EF%BC%88%E5%8F%8D%E5%88%86%E6%9E%90%E5%89%8D%E7%BD%AE%E5%B1%82%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">模块 1：ProgramEntry 程序入口（反分析前置层）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-2%EF%BC%9AAppUpdater-%E5%AE%89%E5%85%A8%E5%AF%B9%E6%8A%97-%E8%87%AA%E9%94%80%E6%AF%81%E6%A8%A1%E5%9D%97"><span class="toc-number">2.2.</span> <span class="toc-text">模块 2：AppUpdater 安全对抗 + 自销毁模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-3%EF%BC%9ACommandRouter-%E6%8C%87%E4%BB%A4%E8%B0%83%E5%BA%A6%E4%B8%AD%E6%9E%A2%EF%BC%8824-%E7%B1%BB%E6%94%BB%E5%87%BB%E6%8C%87%E4%BB%A4%E5%90%88%E9%9B%86%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">模块 3：CommandRouter 指令调度中枢（24 类攻击指令合集）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-4%EF%BC%9APlugin-%E6%8F%92%E4%BB%B6%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%BC%95%E6%93%8E%EF%BC%88%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E8%83%BD%E5%8A%9B%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">模块 4：Plugin 插件动态加载引擎（拓展攻击能力）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-5%EF%BC%9AInputTracker-%E5%85%A8%E5%B1%80%E9%94%AE%E7%9B%98%E8%AE%B0%E5%BD%95%E7%AA%83%E5%AF%86%E6%A8%A1%E5%9D%97"><span class="toc-number">2.5.</span> <span class="toc-text">模块 5：InputTracker 全局键盘记录窃密模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-6%EF%BC%9ANetworkService-C2-%E9%80%9A%E4%BF%A1%E6%A0%B8%E5%BF%83"><span class="toc-number">2.6.</span> <span class="toc-text">模块 6：NetworkService C2 通信核心</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-7%EF%BC%9AHelper-EncryptionService-%E5%BA%95%E5%B1%82%E5%B7%A5%E5%85%B7%E6%94%AF%E6%92%91%E5%BA%93"><span class="toc-number">2.7.</span> <span class="toc-text">模块 7：Helper + EncryptionService 底层工具支撑库</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%94%BB%E5%87%BB%E9%93%BE"><span class="toc-number">3.</span> <span class="toc-text">三、攻击链</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E9%9A%90%E7%A7%98%E8%BF%9B%E9%A9%BB%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%E5%AF%B9%E6%8A%97-ProgramEntry-Helper"><span class="toc-number">3.1.</span> <span class="toc-text">阶段一：隐秘进驻与初始化对抗 (ProgramEntry + Helper)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9AC2%E4%BC%9A%E8%AF%9D%E5%BB%BA%E7%AB%8B%E4%B8%8E%E4%B8%BB%E6%9C%BA%E4%BF%A1%E6%81%AF%E9%87%87%E9%9B%86-NetworkService-Helper"><span class="toc-number">3.2.</span> <span class="toc-text">阶段二：C2会话建立与主机信息采集 (NetworkService + Helper)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%89%EF%BC%9A%E6%8C%87%E4%BB%A4%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%8A%9F%E8%83%BD%E9%80%82%E5%8F%98-CommandRouter-Plugin-AppUpdater-%E8%BF%99%E6%98%AF%E6%9C%A8%E9%A9%AC%E7%9A%84%E5%A4%A7%E8%84%91%EF%BC%8CCommandRouter-Read-%E8%A7%A3%E5%AF%86%E5%90%8E%E6%A0%B9%E6%8D%AE%E6%8C%87%E4%BB%A4%E7%A0%81%E5%88%86%E5%8F%91%E3%80%82%E5%85%B6%E5%8A%9F%E8%83%BD%E5%B9%B6%E9%9D%9E%E5%AD%A4%E7%AB%8B%EF%BC%8C%E8%80%8C%E6%98%AF%E4%BD%93%E7%8E%B0%E6%94%BB%E5%87%BB%E8%80%85%E7%9A%84%E6%88%98%E6%9C%AF%E6%84%8F%E5%9B%BE%EF%BC%9A"><span class="toc-number">3.3.</span> <span class="toc-text">阶段三：指令调度与功能适变 (CommandRouter + Plugin + AppUpdater) 这是木马的大脑，CommandRouter.Read() 解密后根据指令码分发。其功能并非孤立，而是体现攻击者的战术意图：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E5%9B%9B%EF%BC%9A%E7%97%95%E8%BF%B9%E6%B8%85%E7%90%86%E4%B8%8E%E5%AF%B9%E6%8A%97%E5%BC%BA%E5%8C%96-AppUpdater-Helper"><span class="toc-number">3.4.</span> <span class="toc-text">阶段四：痕迹清理与对抗强化 (AppUpdater + Helper)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81XWorm-%E6%A0%B8%E5%BF%83%E5%AF%B9%E6%8A%97%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">四、XWorm 核心对抗技术学习总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/25/XWorm%E6%9C%A8%E9%A9%AC%E5%AD%A6%E4%B9%A0/" title="XWorm木马学习">XWorm木马学习</a><time datetime="2026-07-25T06:25:00.000Z" title="发表于 2026-07-25 14:25:00">2026-07-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/09/Windows%E6%8F%90%E6%9D%83%E5%AD%A6%E4%B9%A0/" title="Windows提权学习">Windows提权学习</a><time datetime="2026-06-09T12:08:11.000Z" title="发表于 2026-06-09 20:08:11">2026-06-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/26/WMI%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/" title="WMI信息收集">WMI信息收集</a><time datetime="2026-05-26T02:53:55.000Z" title="发表于 2026-05-26 10:53:55">2026-05-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/14/%E5%9C%A8XP%E4%B8%8B%E8%BF%87VMP%E5%8F%8D%E8%B0%83%E8%AF%95/" title="在XP下过VMP反调试">在XP下过VMP反调试</a><time datetime="2026-04-14T10:50:04.000Z" title="发表于 2026-04-14 18:50:04">2026-04-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/11/pe%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%AD%A6%E4%B9%A0/" title="pe文件结构学习">pe文件结构学习</a><time datetime="2026-02-11T13:31:01.000Z" title="发表于 2026-02-11 21:31:01">2026-02-11</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/preview.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 半枫</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
