@@ -236,7 +236,29 @@
 <td><code>6baf7121594b84177eec4420875908cf</code></td>
 </tr>
 </tbody></table>
-<h3 id="1-2-攻击全流程"><a href="#1-2-攻击全流程" class="headerlink" title="1.2 攻击全流程"></a>1.2 攻击全流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[&quot;鱼叉钓鱼邮件&lt;br/&gt;投递 ZIP 附件&quot;] --&gt; B[&quot;Online JLPT Exam Dec 2025.zip&quot;]</span><br><span class="line">    B --&gt;|解压| C[&quot;双扩展名 LNK 伪装 PDF&lt;br/&gt;Online JLPT Exam Dec 2025.pdf.lnk&lt;br/&gt;体积 &gt;2MB（正常 LNK 仅 10-12KB）&lt;br/&gt;内嵌完整 PDF 内容与图片&quot;]</span><br><span class="line">    C --&gt;|用户双击| D[&quot;mshta.exe 执行（LOLBin）&lt;br/&gt;拉取远程 HTA&quot;]</span><br><span class="line">    D --&gt; E[&quot;jip.hta @ innlive[.]in&lt;br/&gt;图标: drjagrutichavan[.]com/wd.ico&quot;]</span><br><span class="line">    E --&gt; F[&quot;HTA Loader&lt;br/&gt;窗口缩放为 0 隐藏执行&lt;br/&gt;自定义 Base64 + XOR 解密&quot;]</span><br><span class="line">    F --&gt; G[&quot;查询注册表 .NET 版本&lt;br/&gt;设置 COMPLUS_Version 环境变量&quot;]</span><br><span class="line">    G --&gt; H[&quot;Stage-1: ReadOnly&lt;br/&gt;XAML ObjectDataProvider 反序列化&lt;br/&gt;置 disableActivitySurrogateSelectorTypeCheck=true&lt;br/&gt;（关闭 .NET 反序列化安全校验）&quot;]</span><br><span class="line">    H --&gt; I[&quot;Stage-2: WriteOnly&lt;br/&gt;内存反序列化执行 ki2mtmkl.dll&lt;br/&gt;（全程 Fileless）&quot;]</span><br><span class="line">    I --&gt; J[&quot;释放诱饵 PDF 打开安抚用户&quot;]</span><br><span class="line">    I --&gt; K[&quot;WMI root\\SecurityCenter2&lt;br/&gt;枚举已安装杀软&quot;]</span><br><span class="line">    K --&gt; L&#123;按杀软类型&lt;br/&gt;差异化持久化&#125;</span><br><span class="line">    L --&gt;|Kaspersky| M1[&quot;C:\\Users\\Public\\core\\flow.hta&lt;br/&gt;→ 启动文件夹 .lnk → mshta 执行&quot;]</span><br><span class="line">    L --&gt;|Quick Heal| M2[&quot;生成 bat + .lnk → 启动目录&lt;br/&gt;bat 间接执行 HTA&quot;]</span><br><span class="line">    L --&gt;|Avast/AVG/Avira| M3[&quot;载荷直接拷贝到启动目录执行&quot;]</span><br><span class="line">    L --&gt;|无杀软| M4[&quot;bat + 注册表持久化&quot;]</span><br><span class="line">    M1 &amp; M2 &amp; M3 &amp; M4 --&gt; N[&quot;二次 HTA (flow.hta)&lt;br/&gt;解出 iinneldc.dll（完整 RAT）&quot;]</span><br><span class="line">    N --&gt; O[&quot;线程1: C2 通信&lt;br/&gt;2.56.10[.]86:8621 (TCP)&lt;br/&gt;AES 加密（硬编码密钥）&quot;]</span><br><span class="line">    N --&gt; P[&quot;线程2: 监听 USB 插拔事件&lt;br/&gt;感染 U 盘实现离线横向传播&quot;]</span><br><span class="line">    O --&gt; Q[&quot;命令集: 系统信息/远程Shell/文件管理&lt;br/&gt;截屏/远程桌面/剪贴板窃取与篡改/进程管理/密码窃取&quot;]</span><br><span class="line">    Q --&gt; R[&quot;外传数据 Base64 + AES 加密&quot;]</span><br></pre></td></tr></table></figure>
+<h3 id="1-2-攻击全流程"><a href="#1-2-攻击全流程" class="headerlink" title="1.2 攻击全流程"></a>1.2 攻击全流程</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TD
+    A[&quot;鱼叉钓鱼邮件&lt;br&#x2F;&gt;投递 ZIP 附件&quot;] --&gt; B[&quot;Online JLPT Exam Dec 2025.zip&quot;]
+    B --&gt;|解压| C[&quot;双扩展名 LNK 伪装 PDF&lt;br&#x2F;&gt;Online JLPT Exam Dec 2025.pdf.lnk&lt;br&#x2F;&gt;体积 &gt;2MB（正常 LNK 仅 10-12KB）&lt;br&#x2F;&gt;内嵌完整 PDF 内容与图片&quot;]
+    C --&gt;|用户双击| D[&quot;mshta.exe 执行（LOLBin）&lt;br&#x2F;&gt;拉取远程 HTA&quot;]
+    D --&gt; E[&quot;jip.hta @ innlive[.]in&lt;br&#x2F;&gt;图标: drjagrutichavan[.]com&#x2F;wd.ico&quot;]
+    E --&gt; F[&quot;HTA Loader&lt;br&#x2F;&gt;窗口缩放为 0 隐藏执行&lt;br&#x2F;&gt;自定义 Base64 + XOR 解密&quot;]
+    F --&gt; G[&quot;查询注册表 .NET 版本&lt;br&#x2F;&gt;设置 COMPLUS_Version 环境变量&quot;]
+    G --&gt; H[&quot;Stage-1: ReadOnly&lt;br&#x2F;&gt;XAML ObjectDataProvider 反序列化&lt;br&#x2F;&gt;置 disableActivitySurrogateSelectorTypeCheck&#x3D;true&lt;br&#x2F;&gt;（关闭 .NET 反序列化安全校验）&quot;]
+    H --&gt; I[&quot;Stage-2: WriteOnly&lt;br&#x2F;&gt;内存反序列化执行 ki2mtmkl.dll&lt;br&#x2F;&gt;（全程 Fileless）&quot;]
+    I --&gt; J[&quot;释放诱饵 PDF 打开安抚用户&quot;]
+    I --&gt; K[&quot;WMI root\\SecurityCenter2&lt;br&#x2F;&gt;枚举已安装杀软&quot;]
+    K --&gt; L{按杀软类型&lt;br&#x2F;&gt;差异化持久化}
+    L --&gt;|Kaspersky| M1[&quot;C:\\Users\\Public\\core\\flow.hta&lt;br&#x2F;&gt;→ 启动文件夹 .lnk → mshta 执行&quot;]
+    L --&gt;|Quick Heal| M2[&quot;生成 bat + .lnk → 启动目录&lt;br&#x2F;&gt;bat 间接执行 HTA&quot;]
+    L --&gt;|Avast&#x2F;AVG&#x2F;Avira| M3[&quot;载荷直接拷贝到启动目录执行&quot;]
+    L --&gt;|无杀软| M4[&quot;bat + 注册表持久化&quot;]
+    M1 &amp; M2 &amp; M3 &amp; M4 --&gt; N[&quot;二次 HTA (flow.hta)&lt;br&#x2F;&gt;解出 iinneldc.dll（完整 RAT）&quot;]
+    N --&gt; O[&quot;线程1: C2 通信&lt;br&#x2F;&gt;2.56.10[.]86:8621 (TCP)&lt;br&#x2F;&gt;AES 加密（硬编码密钥）&quot;]
+    N --&gt; P[&quot;线程2: 监听 USB 插拔事件&lt;br&#x2F;&gt;感染 U 盘实现离线横向传播&quot;]
+    O --&gt; Q[&quot;命令集: 系统信息&#x2F;远程Shell&#x2F;文件管理&lt;br&#x2F;&gt;截屏&#x2F;远程桌面&#x2F;剪贴板窃取与篡改&#x2F;进程管理&#x2F;密码窃取&quot;]
+    Q --&gt; R[&quot;外传数据 Base64 + AES 加密&quot;]
+  </pre></div>
 
 <p>下面按环节一一学习。</p>
 <h4 id="1-2-1-初始访问：鱼叉钓鱼-ZIP-附件（T1566-001）"><a href="#1-2-1-初始访问：鱼叉钓鱼-ZIP-附件（T1566-001）" class="headerlink" title="1.2.1 初始访问：鱼叉钓鱼 + ZIP 附件（T1566.001）"></a>1.2.1 初始访问：鱼叉钓鱼 + ZIP 附件（T1566.001）</h4><p>攻击从一封鱼叉钓鱼邮件开始，附件是名为 <code>Online JLPT Exam Dec 2025.zip</code> 的压缩包。考试资料类诱饵的点是：<strong>目标人群明确、打开意愿强、文件本身”应该”有内容</strong>——这为后面”LNK 里内嵌完整 PDF”的伪装策略做了铺垫。</p>
@@ -516,7 +538,7 @@ chunkvalue为base64编码后的文件内容
 
     const runMermaidFn = () => runMermaid($mermaid)
     btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
-    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://registry.npmmirror.com/mermaid/11.9.0/files/dist/mermaid.min.js').then(runMermaidFn)
   }
 
   btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')

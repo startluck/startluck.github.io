@@ -209,7 +209,7 @@
 
     const runMermaidFn = () => runMermaid($mermaid)
     btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
-    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://registry.npmmirror.com/mermaid/11.9.0/files/dist/mermaid.min.js').then(runMermaidFn)
   }
 
   btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
