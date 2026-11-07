@@ -1,0 +1,474 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>初识APT:SideWinder、海莲花、APT36 | 半枫</title><meta name="author" content="半枫"><meta name="copyright" content="半枫"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="初识APT 最近拜读了三篇 APT 样本分析报告：一篇是 CYFIRMA 发布的针对印度政府实体的 APT36（Transparent Tribe）多阶段 LNK 恶意活动报告，另外两篇分别是 SideWinder（APT-C-17）木马加载链分析和国内厂商发布的 海莲花新型木马攻击活动分析。三篇报告的攻击目标、地域、技术栈各不相同，但串起来看恰好覆盖了 APT 攻击中最经典的几类入口技术：LNK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识APT:SideWinder、海莲花、APT36">
+<meta property="og:url" content="http://example.com/2026/11/06/%E5%88%9D%E8%AF%86APT-SideWinder%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%E3%80%81APT36/index.html">
+<meta property="og:site_name" content="半枫">
+<meta property="og:description" content="初识APT 最近拜读了三篇 APT 样本分析报告：一篇是 CYFIRMA 发布的针对印度政府实体的 APT36（Transparent Tribe）多阶段 LNK 恶意活动报告，另外两篇分别是 SideWinder（APT-C-17）木马加载链分析和国内厂商发布的 海莲花新型木马攻击活动分析。三篇报告的攻击目标、地域、技术栈各不相同，但串起来看恰好覆盖了 APT 攻击中最经典的几类入口技术：LNK">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/qq.png">
+<meta property="article:published_time" content="2026-11-06T10:33:47.000Z">
+<meta property="article:modified_time" content="2026-11-07T08:50:18.136Z">
+<meta property="article:author" content="半枫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/qq.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "初识APT:SideWinder、海莲花、APT36",
+  "url": "http://example.com/2026/11/06/%E5%88%9D%E8%AF%86APT-SideWinder%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%E3%80%81APT36/",
+  "image": "http://example.com/img/qq.png",
+  "datePublished": "2026-11-06T10:33:47.000Z",
+  "dateModified": "2026-11-07T08:50:18.136Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "半枫",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/qq.png"><link rel="canonical" href="http://example.com/2026/11/06/%E5%88%9D%E8%AF%86APT-SideWinder%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%E3%80%81APT36/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '初识APT:SideWinder、海莲花、APT36',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/preview.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">101</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/preview.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">半枫</span></a><a class="nav-page-title" href="/"><span class="site-name">初识APT:SideWinder、海莲花、APT36</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时光档案</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">初识APT:SideWinder、海莲花、APT36</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-06T10:33:47.000Z" title="发表于 2026-11-06 18:33:47">2026-11-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-07T08:50:18.136Z" title="更新于 2026-11-07 16:50:18">2026-11-07</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="初识APT"><a href="#初识APT" class="headerlink" title="初识APT"></a>初识APT</h1><blockquote>
+<p>最近拜读了三篇 APT 样本分析报告：一篇是 CYFIRMA 发布的针对印度政府实体的 <strong>APT36（Transparent Tribe）多阶段 LNK 恶意活动</strong>报告，另外两篇分别是 <strong>SideWinder（APT-C-17）木马加载链分析</strong>和国内厂商发布的 <strong>海莲花新型木马攻击活动分析</strong>。<br>三篇报告的攻击目标、地域、技术栈各不相同，但串起来看恰好覆盖了 APT 攻击中最经典的几类入口技术：<strong>LNK 快捷方式伪装、合法数字签名滥用、MSI 安装包 + 变换补丁</strong>。</p>
+<p><strong>声明：本文仅为安全学习与研究目的的技术分析笔记，所有内容基于公开报告整理，请勿用于任何非法用途。</strong> 文中第二、三篇报告的细节依据报告截图整理，个别哈希、域名拼写可能存在识别误差，以原文为准。</p>
+</blockquote>
+<p><code>APT(Advanced Persistent Threat)</code>，翻译过来就是<code>高级持续性威胁</code>。在网络安全领域，它特指一类由国家背景或受国家资助的、具有极高技术水平和明确政治&#x2F;经济目的的黑客组织。</p>
+<p>它是网络空间里的“特种部队”，而不是普通的“小偷”。</p>
+<ol>
+<li>A - Advanced（高级）</li>
+</ol>
+<p>这意味着他们的技术手段非常高超，通常会使用0-day 漏洞（未公开的漏洞）、社会工程学（如精心伪造的钓鱼邮件）、高级免杀技术以及定制化的恶意软件。</p>
+<ol start="2">
+<li>P - Persistent（持续）</li>
+</ol>
+<p>这是 APT 与普通黑客（如勒索软件、黑产）最大的区别。普通黑客追求“快进快出”，拿到钱就走；而 APT 追求的是长期潜伏。</p>
+<pre><code>他们可能会在目标网络中隐藏几个月甚至几年。
+
+他们会建立隐蔽的 C2（命令与控制）通道，定期发送“心跳包”（如前面看到的 30 秒一次）。
+
+他们会千方百计地实现持久化驻留（如修改注册表启动项、植入计划任务），确保即使电脑重启，木马也能自动运行。
+</code></pre>
+<ol start="3">
+<li>T - Threat（威胁）</li>
+</ol>
+<p>这里的威胁通常不是针对普通网民，而是带有强烈的政治、军事或经济目的。目标往往是：</p>
+<pre><code>政府机构、军队、国防工业。
+
+高科技企业（窃取商业机密）。
+
+能源、金融、通信等关键基础设施。
+
+持不同政见者或特定领域的专家学者。
+</code></pre>
+<h2 id="一、APT36-“LNK-伪装-PDF”-多阶段攻击"><a href="#一、APT36-“LNK-伪装-PDF”-多阶段攻击" class="headerlink" title="一、APT36 “LNK 伪装 PDF” 多阶段攻击"></a>一、APT36 “LNK 伪装 PDF” 多阶段攻击</h2><h3 id="1-1-组织与活动背景"><a href="#1-1-组织与活动背景" class="headerlink" title="1.1 组织与活动背景"></a>1.1 组织与活动背景</h3><p>APT36，又称 <strong>Transparent Tribe（透明部落）</strong>，是巴基斯坦背景的威胁组织，长期针对印度政府、军事、学术及战略部门进行网络间谍活动。CYFIRMA 于 2025-12-30 发布的这份报告披露了该组织 2025 年 12 月中旬（首次观测 2025-12-15）的一次攻击活动，其诱饵非常有意思：**”Online JLPT Exam Dec 2025”（12 月 JLPT 日语能力考试）** 相关的考试资料，猜测瞄准的是与考试、教育、涉外事务相关的政府人员。</p>
+<p>基础信息一览：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标平台</td>
+<td>Windows</td>
+</tr>
+<tr>
+<td>威胁类型</td>
+<td>鱼叉钓鱼活动</td>
+</tr>
+<tr>
+<td>文件类型</td>
+<td>LNK（Windows 快捷方式）</td>
+</tr>
+<tr>
+<td>关键标识</td>
+<td><code>Online JLPT Exam Dec 2025.pdf.lnk</code></td>
+</tr>
+<tr>
+<td>首次观测</td>
+<td>2025-12-15</td>
+</tr>
+<tr>
+<td>影响</td>
+<td>数据窃取</td>
+</tr>
+<tr>
+<td>诱饵压缩包 MD5</td>
+<td><code>30fda797535a0f367ea2809426760020</code></td>
+</tr>
+<tr>
+<td>LNK MD5</td>
+<td><code>ceb715db684199958aa5e6c05dc5c7f0</code></td>
+</tr>
+<tr>
+<td>HTA MD5</td>
+<td><code>6baf7121594b84177eec4420875908cf</code></td>
+</tr>
+</tbody></table>
+<h3 id="1-2-攻击全流程"><a href="#1-2-攻击全流程" class="headerlink" title="1.2 攻击全流程"></a>1.2 攻击全流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[&quot;鱼叉钓鱼邮件&lt;br/&gt;投递 ZIP 附件&quot;] --&gt; B[&quot;Online JLPT Exam Dec 2025.zip&quot;]</span><br><span class="line">    B --&gt;|解压| C[&quot;双扩展名 LNK 伪装 PDF&lt;br/&gt;Online JLPT Exam Dec 2025.pdf.lnk&lt;br/&gt;体积 &gt;2MB（正常 LNK 仅 10-12KB）&lt;br/&gt;内嵌完整 PDF 内容与图片&quot;]</span><br><span class="line">    C --&gt;|用户双击| D[&quot;mshta.exe 执行（LOLBin）&lt;br/&gt;拉取远程 HTA&quot;]</span><br><span class="line">    D --&gt; E[&quot;jip.hta @ innlive[.]in&lt;br/&gt;图标: drjagrutichavan[.]com/wd.ico&quot;]</span><br><span class="line">    E --&gt; F[&quot;HTA Loader&lt;br/&gt;窗口缩放为 0 隐藏执行&lt;br/&gt;自定义 Base64 + XOR 解密&quot;]</span><br><span class="line">    F --&gt; G[&quot;查询注册表 .NET 版本&lt;br/&gt;设置 COMPLUS_Version 环境变量&quot;]</span><br><span class="line">    G --&gt; H[&quot;Stage-1: ReadOnly&lt;br/&gt;XAML ObjectDataProvider 反序列化&lt;br/&gt;置 disableActivitySurrogateSelectorTypeCheck=true&lt;br/&gt;（关闭 .NET 反序列化安全校验）&quot;]</span><br><span class="line">    H --&gt; I[&quot;Stage-2: WriteOnly&lt;br/&gt;内存反序列化执行 ki2mtmkl.dll&lt;br/&gt;（全程 Fileless）&quot;]</span><br><span class="line">    I --&gt; J[&quot;释放诱饵 PDF 打开安抚用户&quot;]</span><br><span class="line">    I --&gt; K[&quot;WMI root\\SecurityCenter2&lt;br/&gt;枚举已安装杀软&quot;]</span><br><span class="line">    K --&gt; L&#123;按杀软类型&lt;br/&gt;差异化持久化&#125;</span><br><span class="line">    L --&gt;|Kaspersky| M1[&quot;C:\\Users\\Public\\core\\flow.hta&lt;br/&gt;→ 启动文件夹 .lnk → mshta 执行&quot;]</span><br><span class="line">    L --&gt;|Quick Heal| M2[&quot;生成 bat + .lnk → 启动目录&lt;br/&gt;bat 间接执行 HTA&quot;]</span><br><span class="line">    L --&gt;|Avast/AVG/Avira| M3[&quot;载荷直接拷贝到启动目录执行&quot;]</span><br><span class="line">    L --&gt;|无杀软| M4[&quot;bat + 注册表持久化&quot;]</span><br><span class="line">    M1 &amp; M2 &amp; M3 &amp; M4 --&gt; N[&quot;二次 HTA (flow.hta)&lt;br/&gt;解出 iinneldc.dll（完整 RAT）&quot;]</span><br><span class="line">    N --&gt; O[&quot;线程1: C2 通信&lt;br/&gt;2.56.10[.]86:8621 (TCP)&lt;br/&gt;AES 加密（硬编码密钥）&quot;]</span><br><span class="line">    N --&gt; P[&quot;线程2: 监听 USB 插拔事件&lt;br/&gt;感染 U 盘实现离线横向传播&quot;]</span><br><span class="line">    O --&gt; Q[&quot;命令集: 系统信息/远程Shell/文件管理&lt;br/&gt;截屏/远程桌面/剪贴板窃取与篡改/进程管理/密码窃取&quot;]</span><br><span class="line">    Q --&gt; R[&quot;外传数据 Base64 + AES 加密&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>下面按环节一一学习。</p>
+<h4 id="1-2-1-初始访问：鱼叉钓鱼-ZIP-附件（T1566-001）"><a href="#1-2-1-初始访问：鱼叉钓鱼-ZIP-附件（T1566-001）" class="headerlink" title="1.2.1 初始访问：鱼叉钓鱼 + ZIP 附件（T1566.001）"></a>1.2.1 初始访问：鱼叉钓鱼 + ZIP 附件（T1566.001）</h4><p>攻击从一封鱼叉钓鱼邮件开始，附件是名为 <code>Online JLPT Exam Dec 2025.zip</code> 的压缩包。考试资料类诱饵的点是：<strong>目标人群明确、打开意愿强、文件本身”应该”有内容</strong>——这为后面”LNK 里内嵌完整 PDF”的伪装策略做了铺垫。</p>
+<h4 id="1-2-2-伪装艺术：双扩展名-LNK-“体积伪造”"><a href="#1-2-2-伪装艺术：双扩展名-LNK-“体积伪造”" class="headerlink" title="1.2.2 伪装艺术：双扩展名 LNK + “体积伪造”"></a>1.2.2 伪装艺术：双扩展名 LNK + “体积伪造”</h4><p>解压后是一个 <code>Online JLPT Exam Dec 2025.pdf.lnk</code>。这里有两个精心设计的点：</p>
+<ul>
+<li><strong>双扩展名（T1036 Masquerading）</strong>：由于 Windows 默认隐藏已知扩展名，即使开启了”显示扩展名”，<code>.lnk</code> 的显示行为也具有很强的迷惑性，用户看到的是一个”PDF”；</li>
+<li><strong>体积伪造</strong>：正常 Windows 快捷方式只有 10~12 KB，而这个 LNK 超过 <strong>2 MB</strong>。分析师检查文件内容发现了大量 <code>endstream</code>、<code>endobj</code> 标记和内嵌图片对象——攻击者把<strong>一份完整的 PDF 结构整体塞进了 LNK 文件</strong>，让文件体积、图标观感都逼近真实 PDF，从”文件名像 PDF”伪装到”体量和内容都像 PDF”。</li>
+</ul>
+<blockquote>
+<p>这是一个非常值得学习的细节。正常业务场景里几乎不存在几 MB 的快捷方式，”可疑体积”（LNK 过大）就可以成为一条检测规则。</p>
+</blockquote>
+<p>压缩包内还有一个**隐藏目录 <code>usb</code>**，内含 <code>usbsyn.pim</code> 文件（推测为加密数据&#x2F;代码，运行时解密使用），与后续 RAT 的 USB 感染模块相呼应。</p>
+<h4 id="1-2-3-执行入口：滥用-mshta-exe（T1218-005）"><a href="#1-2-3-执行入口：滥用-mshta-exe（T1218-005）" class="headerlink" title="1.2.3 执行入口：滥用 mshta.exe（T1218.005）"></a>1.2.3 执行入口：滥用 mshta.exe（T1218.005）</h4><p>LNK 被点击后，调用系统自带的 <code>mshta.exe</code> 拉取并执行<strong>远程 HTA 脚本</strong>：</p>
+<ul>
+<li>HTA 地址：<code>https://innlive[.]in/assets/public/01/jlp/jip.hta</code></li>
+<li>远程图标：<code>https://drjagrutichavan[.]com/assetl/hp/pk5//ico/wd.ico</code></li>
+</ul>
+<p>这是典型的 <strong>LOLBin（Living-off-the-Land Binary）</strong> 用法：不落地任何可执行文件、滥用系统受信任的二进制、直接从远端拉代码——杀软和 EDR 对 <code>mshta.exe</code> 天然宽松。</p>
+<h4 id="1-2-4-HTA-Loader：混淆、解密与环境操控"><a href="#1-2-4-HTA-Loader：混淆、解密与环境操控" class="headerlink" title="1.2.4 HTA Loader：混淆、解密与环境操控"></a>1.2.4 HTA Loader：混淆、解密与环境操控</h4><p>HTA 脚本作为隐蔽加载器，做了四件事：</p>
+<ol>
+<li><strong>窗口隐藏</strong>：把窗口尺寸调整为 0，用户全程无感知；</li>
+<li><strong>自定义解密</strong>：定义 <code>USBContents</code>、<code>SyncDataToCD</code>、<code>CDDownload</code> 等函数，实现自定义 Base64 解码 + <strong>XOR 解密</strong>例程；脚本内两个关键变量 <code>ReadOnly</code> 和 <code>WriteOnly</code> 分别是两个加密载荷容器；</li>
+<li><strong>ActiveX 环境操控</strong>：通过 <code>WScript.Shell</code> 查询注册表确定系统可用的 .NET 运行时版本，并动态设置 <strong><code>COMPLUS_Version</code></strong> 环境变量——提高兼容性和可靠性；</li>
+<li><strong>辅助欺骗</strong>：下载并打开一份<strong>合法 PDF</strong>，让用户确信自己打开的就是真文档。</li>
+</ol>
+<h4 id="1-2-5-Stage-1（ReadOnly）：用-XAML-反序列化”关掉”-NET-的安全开关"><a href="#1-2-5-Stage-1（ReadOnly）：用-XAML-反序列化”关掉”-NET-的安全开关" class="headerlink" title="1.2.5 Stage-1（ReadOnly）：用 XAML 反序列化”关掉” .NET 的安全开关"></a>1.2.5 Stage-1（ReadOnly）：用 XAML 反序列化”关掉” .NET 的安全开关</h4><p>这是本篇报告技术含量最高的部分。</p>
+<p><code>ReadOnly</code> 载荷在内存中重建一个 2312 字节的对象，解密后是一个<strong>序列化的 .NET 对象</strong>，其中包含基于 <strong>XAML</strong> 的配置数据，通过 <code>BinaryFormatter</code> 在内存中反序列化。该 XAML 内嵌恶意 <code>ResourceDictionary</code>，滥用 <strong><code>ObjectDataProvider</code></strong> 元素：</p>
+<ul>
+<li>操纵 <code>System.Workflow.ComponentModel.AppSettings</code>；</li>
+<li>把内部字段 **<code>disableActivitySurrogateSelectorTypeCheck</code> 设为 <code>true</code>**。</li>
+</ul>
+<p>这个开关有什么用呢：.NET 为了防御不安全的反序列化攻击，提供了 ActivitySurrogateSelector 类型校验；把它禁用后，后续阶段就可以<strong>执行任意不安全的反序列化</strong>。所以 <code>ReadOnly</code> 本质是一个**”配置初始化器”**——先解除系统防御，再给 Stage-2 （WriteOnly）开路。</p>
+<blockquote>
+<p><code>ObjectDataProvider</code> + <code>BinaryFormatter</code> 是 .NET 反序列化利用的经典组合（最早在 CMS&#x2F;渗透工具链中常见），APT 把它搬到了载荷加载流程里，用合法的 .NET 机制去关闭 .NET 自己的安全检查，全程无需内核漏洞、无需提权利用，非常”方便安全”。</p>
+</blockquote>
+<h4 id="1-2-6-Stage-2（WriteOnly）：Fileless-内存-DLL"><a href="#1-2-6-Stage-2（WriteOnly）：Fileless-内存-DLL" class="headerlink" title="1.2.6 Stage-2（WriteOnly）：Fileless 内存 DLL"></a>1.2.6 Stage-2（WriteOnly）：Fileless 内存 DLL</h4><p><code>WriteOnly</code> 是备用&#x2F;第二级加密载荷（约 359 KB），同样<strong>不落盘</strong>，反序列化后在内存中直接执行，即 **<code>ki2mtmkl.dll</code>**——感染链的核心组件。</p>
+<h4 id="1-2-7-ki2mtmkl-dll：诱饵、环境感知与”杀软自适应持久化”"><a href="#1-2-7-ki2mtmkl-dll：诱饵、环境感知与”杀软自适应持久化”" class="headerlink" title="1.2.7 ki2mtmkl.dll：诱饵、环境感知与”杀软自适应持久化”"></a>1.2.7 ki2mtmkl.dll：诱饵、环境感知与”杀软自适应持久化”</h4><p><code>ki2mtmkl.dll</code> 加载后调用 <code>Work()</code> 主例程，编排后续所有活动。三个关键行为：</p>
+<p><strong>① 诱饵 PDF 释放</strong>：从内嵌编码数据中重建并解压一份合法 PDF 写入临时目录并自动打开。受害者阅读”真文档”的同时，恶意代码在后台继续运行——**”用户看到的”和”系统执行的”一明一暗**。</p>
+<p><strong>② 杀软感知（Security Posture Profiling）</strong>：通过 WMI <code>root\SecurityCenter2</code> 命名空间枚举已安装杀软及显示名称，然后<strong>按杀软类型选择不同的持久化与执行路径</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>检测到的杀软</th>
+<th>标志位</th>
+<th>持久化策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kaspersky</td>
+<td>flag7</td>
+<td>工作目录 <code>C:\Users\Public\core\</code>，落盘混淆的 <code>flow.hta</code>，启动文件夹放置快捷方式，PowerShell 调 <code>mshta.exe</code> 执行</td>
+</tr>
+<tr>
+<td>Quick Heal</td>
+<td>flag6</td>
+<td>生成 bat 批处理 + 恶意快捷方式放入启动目录，通过 bat 间接执行 HTA</td>
+</tr>
+<tr>
+<td>Avast &#x2F; AVG &#x2F; Avira</td>
+<td>flag4&#x2F;3&#x2F;5</td>
+<td>简化策略：直接把载荷拷贝到启动目录执行</td>
+</tr>
+<tr>
+<td>未检出已知杀软</td>
+<td>—</td>
+<td>兜底例程：bat 执行 + 注册表持久化 + 载荷部署</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>针对不同杀软的行为审计盲区</strong>定制投放路径——对 Kaspersky 用 <code>mshta</code>+<code>lnk</code> 组合绕其强项，对弱查杀产品则省事直接落启动目录。这种”防御环境自适应”也是APT高技术的体现，之前遇到的普通样本都没有这样的策略。</p>
+</blockquote>
+<p><strong>③ 二次 HTA 投递</strong>：新落地的 <code>flow.hta</code> 重复类似的混淆&#x2F;解密逻辑，解出：</p>
+<ul>
+<li><code>ReadOnly</code>：序列化 XML 配置数据；</li>
+<li><code>WriteOnly</code>：名为 <strong><code>iinneldc.dll</code></strong> 的恶意 DLL——功能完整的 RAT。</li>
+</ul>
+<h4 id="1-2-8-iinneldc-dll：双线程-RAT"><a href="#1-2-8-iinneldc-dll：双线程-RAT" class="headerlink" title="1.2.8 iinneldc.dll：双线程 RAT"></a>1.2.8 iinneldc.dll：双线程 RAT</h4><p><code>iinneldc.dll</code> 启动即创建<strong>两个并行线程</strong>：</p>
+<ul>
+<li><strong>线程一：C2 命令与控制</strong>（<code>DoMainWork</code>）</li>
+<li><strong>线程二：USB 插拔事件监听</strong>——检测 U 盘插入并实施感染，让木马可以<strong>借助移动介质向物理隔离&#x2F;受限网络扩散</strong>。</li>
+</ul>
+<p><strong>C2 通信</strong>：</p>
+<ul>
+<li>硬编码 C2：<code>2.56.10.86:8621</code>（TCP 长连接，非 HTTP，T1095）；</li>
+<li>上线即回传用户名、计算机名、操作系统版本；</li>
+<li>命令接收：先读消息长度再取载荷，使用 <strong>AES 解密</strong>，硬编码密钥 <code>ZAEDF_98768_@$#%_QCHF</code>；</li>
+<li>解密后交 <code>parse()</code> 分发执行。</li>
+</ul>
+<p><strong>命令集（解析结果就是一份”间谍功能清单”）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>命令&#x2F;功能</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Disconnected</code></td>
+<td>断开网络流</td>
+</tr>
+<tr>
+<td><code>SystemInformation</code></td>
+<td><code>getsystem()</code> &#x2F; <code>GetDeepInfo()</code> 收集主机信息回传</td>
+</tr>
+<tr>
+<td><code>pkill &lt;pid&gt;</code></td>
+<td>杀指定进程并回传最新进程列表</td>
+</tr>
+<tr>
+<td><code>RD</code> 前缀</td>
+<td>远程桌面：<code>CopyFromScreen()</code> 截屏 → 按攻击者指定尺寸缩放 → JPEG 压缩 → Base64 → 以 “RemoteDesktop” 标签回传，近实时窥屏</td>
+</tr>
+<tr>
+<td>剪贴板读写</td>
+<td><code>getclipboardtext()</code> 窃取复制内容（密码、钱包地址）；<code>setclipboardtext()</code> <strong>篡改剪贴板</strong>（可实施加密货币地址替换）</td>
+</tr>
+<tr>
+<td><code>runshell</code></td>
+<td>隐藏窗口调用 <code>cmd.exe</code> 执行任意命令并回传输出</td>
+</tr>
+<tr>
+<td>文件管理</td>
+<td>枚举、上传、下载、重命名、删除、移动文件&#x2F;目录</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>设置光标、列举进程&#x2F;软件、<strong>窃取已保存密码</strong></td>
+</tr>
+</tbody></table>
+<p><strong>数据窃取</strong>：<code>CopySubfiles</code> 函数递归扫描目录，定向收集 <code>doc/docx/xls/xlsx/ppt/pptx</code>、PDF、TXT、<code>mdb/accdb</code> 数据库文件——典型的办公情报窃取画像。所有外传数据<strong>先 Base64 编码再 AES 加密</strong>后经 C2 通道发送（T1041）。</p>
+<h2 id="二、SideWinder（APT-C-17）木马加载链分析"><a href="#二、SideWinder（APT-C-17）木马加载链分析" class="headerlink" title="二、SideWinder（APT-C-17）木马加载链分析"></a>二、SideWinder（APT-C-17）木马加载链分析</h2><p>响尾蛇组织， 又称Sidewinder、APT-C-17、T-APT-04，是一个来自于南亚地区的境外APT组织。该组织主要针对中国、巴基斯坦、尼泊尔、斯里兰卡等亚洲地区国家进行网络间谍活动，主要针对高校，新闻，金融，媒体，政府和电信公司进行攻击，以窃取敏感信息为主要目标。该组织的相关攻击活动最早可以追溯到2012年，至今还非常活跃，大多数行动是对巴基斯坦进行攻击，窃取机密信息。</p>
+<h3 id="Step1：样本执行，解密-C2-地址"><a href="#Step1：样本执行，解密-C2-地址" class="headerlink" title="Step1：样本执行，解密 C2 地址"></a>Step1：样本执行，解密 C2 地址</h3><p>木马启动，读取内置加密字符串<code>CE 4*k</code>，使用硬编码密钥<code>$*VYGETRMPHG@%9bvdsf984574398546573d6#^%*&amp;</code>异或解密，<br>得到 C2 域名<code>govmm.org</code>。<br><img src="%E5%88%9D%E8%AF%86APT1.png"><br><img src="%E5%88%9D%E8%AF%86APT2.png"></p>
+<center>解密C2地址代码</center>
+
+<h3 id="Step2：生成主机标识（ClientID）"><a href="#Step2：生成主机标识（ClientID）" class="headerlink" title="Step2：生成主机标识（ClientID）"></a>Step2：生成主机标识（ClientID）</h3><ol>
+<li>通过 GetTempPath2W 获取系统用户 Temp 目录 <code>C:\Users\&lt;username&gt;\AppData\Local\Temp\</code></li>
+<li>拼接固定文件名<code>TMP987979RND</code>得到临时文件路径</li>
+<li>生成随机数字作为<strong>ClientID</strong>写入该临时文件，作为被控主机唯一 ID<br><img src="%E5%88%9D%E8%AF%86APT3.png"></li>
+</ol>
+<h3 id="Step3：构造-C2-请求-URL，上线通信"><a href="#Step3：构造-C2-请求-URL，上线通信" class="headerlink" title="Step3：构造 C2 请求 URL，上线通信"></a>Step3：构造 C2 请求 URL，上线通信</h3><p>ClientID 拼接固定路径，生成访问 URL：<br><code>/softwareapp-updates/&#123;ClientID&#125;/serveupdate.php?updateapps=78778JvGFDTS879843</code><br><img src="%E5%88%9D%E8%AF%86APT4.png"><br><img src="%E5%88%9D%E8%AF%86APT5.png"><br>调用 WinHttp API 发起<strong>HTTP POST 请求</strong>（Content-Length&#x3D;0，空包上线，向 C2 报到）。<br><img src="%E5%88%9D%E8%AF%86APT6.png"></p>
+<h3 id="tep4：接收-C2-下发指令，分支处理"><a href="#tep4：接收-C2-下发指令，分支处理" class="headerlink" title="tep4：接收 C2 下发指令，分支处理"></a>tep4：接收 C2 下发指令，分支处理</h3><p>木马读取 C2 服务器返回数据，识别<code>GOTCHAA=</code>指令前缀，分两条分支：</p>
+<h4 id="分支-A：文件窃取（download-指令）"><a href="#分支-A：文件窃取（download-指令）" class="headerlink" title="分支 A：文件窃取（download 指令）"></a>分支 A：文件窃取（download 指令）</h4><ol>
+<li><p>解析<code>download</code>后面的文件路径，下载文件的命令格式如下：</p>
+<p> GOTCHAA&#x3D;download <filepath></filepath></p>
+</li>
+</ol>
+<p><img src="%E5%88%9D%E8%AF%86APT7.png"><br>2. 读取本地目标文件内容<br>3. 文件内容做 Base64 编码<br>4. 按照分片协议封装为<code>updateoutput</code>参数<br>5. POST 发包，分片把文件数据传回 C2 服务器，返回包数据格式如下：</p>
+<pre><code>updateoutput=totsize=1---chunkno=1---chunkvalue=base64(content)
+totsize为数据分片的总个数
+chunkno为当前数据分片的序号
+chunkvalue为base64编码后的文件内容
+</code></pre>
+<h4 id="分支-B：任意系统命令执行"><a href="#分支-B：任意系统命令执行" class="headerlink" title="分支 B：任意系统命令执行"></a>分支 B：任意系统命令执行</h4><ol>
+<li>异或解密 C2 下发的命令字符串<br><img src="%E5%88%9D%E8%AF%86APT8.png"><br><img src="%E5%88%9D%E8%AF%86APT9.png"></li>
+<li>调用<code>CreateProcess</code>启动<code>cmd.exe /c</code>执行命令</li>
+<li>通过管道捕获命令标准输出回显</li>
+<li>回显内容 Base64 编码，同样使用分片协议封装 POST 回传给 C2</li>
+</ol>
+<h2 id="三、海莲花（OceanLotus）"><a href="#三、海莲花（OceanLotus）" class="headerlink" title="三、海莲花（OceanLotus）"></a>三、海莲花（OceanLotus）</h2><p>海莲花（OceanLotus），又称 APT32，是一个被广泛认为具有东南亚某国背景的国家级 APT 组织，自 2012 年起活跃至今。长期针对中国及部分东南亚国家实施网络攻击，以窃取敏感情报为主要目标，服务于其地缘政治与战略需求。该组织技术能力持续演进，攻击手法已从早期的鱼叉钓鱼发展为具备高级免杀、无文件驻留和跨平台攻击能力的高水平威胁团体。在目标选择上，其攻击重点已从基础情报收集转向战略级涉外情报窃取。</p>
+<h3 id="核心攻击手法"><a href="#核心攻击手法" class="headerlink" title="核心攻击手法"></a>核心攻击手法</h3><ol>
+<li><strong>MST（Microsoft Transform）文件滥用，隐蔽植入</strong><br>MST 是 Windows 安装程序的合法变更文件，攻击者将恶意 DLL（<code>Binary.Transforms.dll</code>）封装在 MST 内部；依托合法 MSI 安装流程执行，规避静态特征查杀；安装结束后 MST 会被系统自动清理，溯源难度高。不需要修改原始 MSI，就可以注入代码、执行命令、篡改配置。</li>
+<li><strong>注册表持久化驻留</strong><br>恶意载荷释放 <code>PCHealthCheck.exe</code>（合法载体）+ <code>tbs.dll</code> 到 <code>%LOCALAPPDATA%\PCHealthCheck\</code>；在 <code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code> 添加自启动项，开机自动拉起程序，维持长期控制。<br><img src="%E5%88%9D%E8%AF%86APT10.png"><br><img src="%E5%88%9D%E8%AF%86APT11.png"></li>
+<li><strong>Process Hollowing 进程镂空内存执行（无文件落地对抗）</strong><ul>
+<li><code>tbs.dll</code> 内置 AES 加密的 shellcode；先 AES 解密、解压得到 shellcode</li>
+<li>加载系统自带 <code>xpsservices.dll</code>，掏空该进程内存，替换代码区块为解密后的 shellcode，修改内存权限后执行恶意代码<br><img src="%E5%88%9D%E8%AF%86APT12.png"></li>
+<li>恶意代码不落地，直接在内存运行，绕过常规文件查杀</li>
+</ul>
+</li>
+<li><strong>Rust 编写远控，加密心跳 C2 通信</strong><ul>
+<li>底层远控主体使用 Rust 开发，HTTP 协议和 C2 交互</li>
+<li>心跳包自定义结构：<strong>2 字节密钥长度 + 可变长异或密钥 + 4 字节数据长度 + 异或加密数据</strong></li>
+<li>定期心跳上报，C2 下发指令经过 AES 解密后执行</li>
+<li>支持能力：主机信息收集、枚举进程、文件上传、文件下载</li>
+</ul>
+</li>
+</ol>
+<h2 id="四-三篇报告横向对比：攻击流程与攻击手法"><a href="#四-三篇报告横向对比：攻击流程与攻击手法" class="headerlink" title="四. 三篇报告横向对比：攻击流程与攻击手法"></a>四. 三篇报告横向对比：攻击流程与攻击手法</h2><table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>SideWinder</th>
+<th>海莲花 (OceanLotus)</th>
+<th>APT36</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始载体</td>
+<td>伪装成更新程序的 PE 文件</td>
+<td>manarupdate.exe	MST (Microsoft Transform) 文件，寄生合法 MSI 安装流程</td>
+<td>ZIP 内的超大 LNK，双扩展名 .pdf.lnk，内嵌完整 PDF 结构</td>
+</tr>
+<tr>
+<td>执行链路</td>
+<td>单阶段：进程直接运行，调 WinHttp API 上线</td>
+<td>MST → Binary.Transforms.dll → 释放 PCHealthCheck.exe + tbs.dll → 解密 shellcode</td>
+<td>LNK → mshta 拉远程 HTA → Base64+XOR → .NET 反序列化 → ki2mtmk1.dll → flow.hta → tinneldc.dll</td>
+</tr>
+<tr>
+<td>内存对抗</td>
+<td>弱：载荷全落地，仅加密配置串</td>
+<td>强：Process Hollowing 掏空 xpsservices.dll 写 shellcode，白程序侧载</td>
+<td>强：关 disableActivitySurrogateSelectorTypeCheck 绕 .NET 防护，DLL 全程内存加载</td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>无自启动机制，仅靠 ClientID 临时文件维持身份</td>
+<td>HKCU Run 注册表添加PCHealthCheck 自启动项</td>
+<td>WMI 查 SecurityCenter2 探测杀软，按结果分支：Startup LNK &#x2F; bat &#x2F; Run 注册表 &#x2F; 备选多重组合</td>
+</tr>
+<tr>
+<td>C2 通道</td>
+<td>HTTP POST，伪装浏览器 UA；路径 &#x2F;softwareapp-updates&#x2F;(ClientID)&#x2F;serveupdate.php；域名 govmm.org 异或解密</td>
+<td>HTTP + 自定义二进制心跳：2 字节密钥长 + 变长异或密钥 + 4 字节数据长 + 异或数据；远控体 Rust 编写</td>
+<td>原始 TCP 2.56.10.86:8621 + TLS；指令用硬编码 AES 密钥解密</td>
+</tr>
+<tr>
+<td>指令与外传</td>
+<td>GOTCHAA&#x3D; 前缀；download 读文件、cmd 执行命令，回显 Base64 后按 updateoutput&#x3D;tosize–chunkno–chunkvalue 分片回传</td>
+<td>AES 解密指令；支持信息收集、进程枚举、文件上传下载</td>
+<td>Base64 + AES 外传；扩展截屏、剪贴板窃取与篡改、凭据抓取、USB 事件监听横向</td>
+</tr>
+<tr>
+<td>加密手法</td>
+<td>单一硬编码密钥异或 (C2 地址、命令串)</td>
+<td>AES 加密 shellcode + 自定义异或心跳包 (双层)</td>
+<td>Base64 + XOR 混淆载荷 + AES 加密指令 (多层混合)</td>
+</tr>
+<tr>
+<td>迷惑受害者</td>
+<td>靠“更新程序”文件名伪装，无诱饵文档展示</td>
+<td>释放并打开诱饵文档，热点议题标题降低戒心</td>
+<td>LNK 体积与真实 PDF 相当 + 运行时释放打开诱饵 PDF，双重可信度</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">半枫</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/11/06/%E5%88%9D%E8%AF%86APT-SideWinder%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%E3%80%81APT36/">http://example.com/2026/11/06/%E5%88%9D%E8%AF%86APT-SideWinder%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%E3%80%81APT36/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">半枫</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/qq.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/" title="ClickFix攻击活动学习"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ClickFix攻击活动学习</div></div><div class="info-2"><div class="info-item-1">ClickFix攻击活动学习 近期又拜读了两篇博客，一篇是 SpiderLabs Blog（蜘蛛实验室博客）的Inside PhantomPolia: Remus Stealer Delivery via Donut Shellcode in ClickFix Campaign（2026-10-7），另一篇是 Huntress 官方博客 的Attackers Abuse ChatGPT Custom GPTs to Deliver RAT via ClickFix（2026-9-28），原文见文末链接。本文是我的学习笔记，技术事实以原报告为准。  一、背景：让用户自己感染自己ClickFix 不是某一款具体病毒，而是一套成熟的恶意代码投递攻击框架与社会工程学手法。它的核心逻辑是：不依赖软件漏洞，而是靠伪造 “人机验证、系统报错、内容加载失败” 等常见界面，诱骗用户手动复制粘贴并执行恶意命令，借用户自身权限完成恶意代码落地，因此能轻松绕过浏览器沙箱和传统文件型杀毒软件的检测。 二、第一种场景：基于被攻陷的网站第 1 阶段：访问被黑网站，触发 PhantomPolia 加载器（Jav...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/qq.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">半枫</div><div class="author-info-description">Welcome to my blog</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">101</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%9D%E8%AF%86APT"><span class="toc-number">1.</span> <span class="toc-text">初识APT</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81APT36-%E2%80%9CLNK-%E4%BC%AA%E8%A3%85-PDF%E2%80%9D-%E5%A4%9A%E9%98%B6%E6%AE%B5%E6%94%BB%E5%87%BB"><span class="toc-number">1.1.</span> <span class="toc-text">一、APT36 “LNK 伪装 PDF” 多阶段攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%BB%84%E7%BB%87%E4%B8%8E%E6%B4%BB%E5%8A%A8%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 组织与活动背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%94%BB%E5%87%BB%E5%85%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 攻击全流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-%E5%88%9D%E5%A7%8B%E8%AE%BF%E9%97%AE%EF%BC%9A%E9%B1%BC%E5%8F%89%E9%92%93%E9%B1%BC-ZIP-%E9%99%84%E4%BB%B6%EF%BC%88T1566-001%EF%BC%89"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">1.2.1 初始访问：鱼叉钓鱼 + ZIP 附件（T1566.001）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-%E4%BC%AA%E8%A3%85%E8%89%BA%E6%9C%AF%EF%BC%9A%E5%8F%8C%E6%89%A9%E5%B1%95%E5%90%8D-LNK-%E2%80%9C%E4%BD%93%E7%A7%AF%E4%BC%AA%E9%80%A0%E2%80%9D"><span class="toc-number">1.1.2.2.</span> <span class="toc-text">1.2.2 伪装艺术：双扩展名 LNK + “体积伪造”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-%E6%89%A7%E8%A1%8C%E5%85%A5%E5%8F%A3%EF%BC%9A%E6%BB%A5%E7%94%A8-mshta-exe%EF%BC%88T1218-005%EF%BC%89"><span class="toc-number">1.1.2.3.</span> <span class="toc-text">1.2.3 执行入口：滥用 mshta.exe（T1218.005）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-4-HTA-Loader%EF%BC%9A%E6%B7%B7%E6%B7%86%E3%80%81%E8%A7%A3%E5%AF%86%E4%B8%8E%E7%8E%AF%E5%A2%83%E6%93%8D%E6%8E%A7"><span class="toc-number">1.1.2.4.</span> <span class="toc-text">1.2.4 HTA Loader：混淆、解密与环境操控</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-5-Stage-1%EF%BC%88ReadOnly%EF%BC%89%EF%BC%9A%E7%94%A8-XAML-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E2%80%9D%E5%85%B3%E6%8E%89%E2%80%9D-NET-%E7%9A%84%E5%AE%89%E5%85%A8%E5%BC%80%E5%85%B3"><span class="toc-number">1.1.2.5.</span> <span class="toc-text">1.2.5 Stage-1（ReadOnly）：用 XAML 反序列化”关掉” .NET 的安全开关</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-6-Stage-2%EF%BC%88WriteOnly%EF%BC%89%EF%BC%9AFileless-%E5%86%85%E5%AD%98-DLL"><span class="toc-number">1.1.2.6.</span> <span class="toc-text">1.2.6 Stage-2（WriteOnly）：Fileless 内存 DLL</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-7-ki2mtmkl-dll%EF%BC%9A%E8%AF%B1%E9%A5%B5%E3%80%81%E7%8E%AF%E5%A2%83%E6%84%9F%E7%9F%A5%E4%B8%8E%E2%80%9D%E6%9D%80%E8%BD%AF%E8%87%AA%E9%80%82%E5%BA%94%E6%8C%81%E4%B9%85%E5%8C%96%E2%80%9D"><span class="toc-number">1.1.2.7.</span> <span class="toc-text">1.2.7 ki2mtmkl.dll：诱饵、环境感知与”杀软自适应持久化”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-8-iinneldc-dll%EF%BC%9A%E5%8F%8C%E7%BA%BF%E7%A8%8B-RAT"><span class="toc-number">1.1.2.8.</span> <span class="toc-text">1.2.8 iinneldc.dll：双线程 RAT</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81SideWinder%EF%BC%88APT-C-17%EF%BC%89%E6%9C%A8%E9%A9%AC%E5%8A%A0%E8%BD%BD%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-number">1.2.</span> <span class="toc-text">二、SideWinder（APT-C-17）木马加载链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step1%EF%BC%9A%E6%A0%B7%E6%9C%AC%E6%89%A7%E8%A1%8C%EF%BC%8C%E8%A7%A3%E5%AF%86-C2-%E5%9C%B0%E5%9D%80"><span class="toc-number">1.2.1.</span> <span class="toc-text">Step1：样本执行，解密 C2 地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step2%EF%BC%9A%E7%94%9F%E6%88%90%E4%B8%BB%E6%9C%BA%E6%A0%87%E8%AF%86%EF%BC%88ClientID%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">Step2：生成主机标识（ClientID）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step3%EF%BC%9A%E6%9E%84%E9%80%A0-C2-%E8%AF%B7%E6%B1%82-URL%EF%BC%8C%E4%B8%8A%E7%BA%BF%E9%80%9A%E4%BF%A1"><span class="toc-number">1.2.3.</span> <span class="toc-text">Step3：构造 C2 请求 URL，上线通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tep4%EF%BC%9A%E6%8E%A5%E6%94%B6-C2-%E4%B8%8B%E5%8F%91%E6%8C%87%E4%BB%A4%EF%BC%8C%E5%88%86%E6%94%AF%E5%A4%84%E7%90%86"><span class="toc-number">1.2.4.</span> <span class="toc-text">tep4：接收 C2 下发指令，分支处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E6%94%AF-A%EF%BC%9A%E6%96%87%E4%BB%B6%E7%AA%83%E5%8F%96%EF%BC%88download-%E6%8C%87%E4%BB%A4%EF%BC%89"><span class="toc-number">1.2.4.1.</span> <span class="toc-text">分支 A：文件窃取（download 指令）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E6%94%AF-B%EF%BC%9A%E4%BB%BB%E6%84%8F%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C"><span class="toc-number">1.2.4.2.</span> <span class="toc-text">分支 B：任意系统命令执行</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%EF%BC%88OceanLotus%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">三、海莲花（OceanLotus）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95"><span class="toc-number">1.3.1.</span> <span class="toc-text">核心攻击手法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E4%B8%89%E7%AF%87%E6%8A%A5%E5%91%8A%E6%A8%AA%E5%90%91%E5%AF%B9%E6%AF%94%EF%BC%9A%E6%94%BB%E5%87%BB%E6%B5%81%E7%A8%8B%E4%B8%8E%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95"><span class="toc-number">1.4.</span> <span class="toc-text">四. 三篇报告横向对比：攻击流程与攻击手法</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/06/%E5%88%9D%E8%AF%86APT-SideWinder%E3%80%81%E6%B5%B7%E8%8E%B2%E8%8A%B1%E3%80%81APT36/" title="初识APT:SideWinder、海莲花、APT36">初识APT:SideWinder、海莲花、APT36</a><time datetime="2026-11-06T10:33:47.000Z" title="发表于 2026-11-06 18:33:47">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/31/ClickFix%E6%94%BB%E5%87%BB%E6%B4%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/" title="ClickFix攻击活动学习">ClickFix攻击活动学习</a><time datetime="2026-10-31T07:45:38.000Z" title="发表于 2026-10-31 15:45:38">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/29/%E5%88%9D%E5%AD%A6%E6%A0%B7%E6%9C%AC%E7%9A%84%E5%8C%85%E8%A3%85%E3%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E8%90%BD%E5%9C%B0/" title="从 NeedyMantis 中初学样本的包装、加载与落地">从 NeedyMantis 中初学样本的包装、加载与落地</a><time datetime="2026-10-29T07:34:03.000Z" title="发表于 2026-10-29 15:34:03">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/LOLBAS%E6%95%B4%E7%90%86%E5%AD%A6%E4%B9%A0/" title="LOLBAS整理学习">LOLBAS整理学习</a><time datetime="2026-09-11T08:42:39.000Z" title="发表于 2026-09-11 16:42:39">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/01/vmp%E8%99%9A%E6%8B%9F%E5%8C%96%E5%AD%A6%E4%B9%A0(2)%EF%BC%9A%E6%8C%87%E4%BB%A4%E6%A8%A1%E6%8B%9F/" title="vmp虚拟化学习(2)：JCC指令模拟">vmp虚拟化学习(2)：JCC指令模拟</a><time datetime="2026-09-01T02:09:02.000Z" title="发表于 2026-09-01 10:09:02">2026-09-01</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/preview.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 半枫</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
